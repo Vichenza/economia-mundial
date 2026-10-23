@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/33884956/README.md)
 # Economia mundial e G20
 
 Dashboard interativo com 195 economias e 24 indicadores do FMI, de 1980 a 2031: mapa-múndi, comparação entre continentes, histórico por país, correlações entre indicadores, detalhes do G20 e uma corrida de barras animada.

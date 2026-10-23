@@ -1,0 +1,2459 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Economia mundial e G20</title>
+<meta name="description" content="Dashboard interativo com 195 economias e 24 indicadores do FMI, de 1980 a 2031: mapa, continentes, histórico, correlações, G20 e corrida de barras.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Economia mundial e G20">
+<meta property="og:description" content="Dashboard interativo com 195 economias e 24 indicadores do FMI, de 1980 a 2031: mapa, continentes, histórico, correlações, G20 e corrida de barras.">
+<meta property="og:image" content="https://SEU-USUARIO.github.io/economia-mundial/capa.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='9' width='3.5' height='6' rx='1' fill='%233987e5'/%3E%3Crect x='6.25' y='5' width='3.5' height='10' rx='1' fill='%23cf4f2a'/%3E%3Crect x='11.5' y='2' width='3.5' height='13' rx='1' fill='%2322ad6e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --font-anthropic-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-anthropic-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --cds-font-size-caption: 12px; --cds-font-size-body: 14px; --cds-font-size-heading: 16px; --cds-font-size-title: 26px;
+  --cds-font-weight-medium: 500;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 24px; --cds-gap-xl: 32px;
+  --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 16px;
+  --cds-radius: 8px; --cds-dur-slow: .3s;
+  --color-fg: #1f1e1d; --color-fg-muted: #6b6a66; --color-bg: #faf9f5; --color-panel: #ffffff; --color-border-line: #e5e3dc;
+  --color-ok: #1f9d6b; --color-warn: #b7860b; --color-bad: #c4442b;
+  --cds-chart-muted: #c9c7c0; --cds-chart-grid: #ecebe6; --cds-chart-axis: #a3a29c; --cds-chart-reference: #7d7c77;
+  --cds-surface-popover: #ffffff; --cds-border: #dcdad3; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.12); --cds-text-secondary: #6b6a66;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-fg: #f2f0ea; --color-fg-muted: #a3a19b; --color-bg: #0b0b0b; --color-panel: #1a1a19; --color-border-line: #2e2e2c;
+    --color-bad: #d9573b;
+    --cds-chart-muted: #4a4945; --cds-chart-grid: #2a2a28; --cds-chart-axis: #5c5b57; --cds-chart-reference: #8a8984;
+    --cds-surface-popover: #262624; --cds-border: #3a3936; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.5); --cds-text-secondary: #a3a19b;
+  }
+}
+html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); }
+#dash-root { max-width: 1440px; margin: 0 auto; padding: 24px 16px 40px; }
+@keyframes dash-pulso { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.dash-skeleton { background: var(--cds-chart-grid); border-radius: var(--cds-radius); color: transparent !important; animation: dash-pulso 1.4s ease-in-out infinite; }
+b.dash-skeleton, span.dash-skeleton { display: inline-block; min-width: 2.2em; }
+.site-nota { font-family: var(--font-anthropic-sans); font-size: 12px; color: var(--color-fg-muted); max-width: 1440px; margin: 0 auto; padding: 0 16px 32px; line-height: 1.5; }
+.site-nota a { color: inherit; }
+</style>
+<script src="d3.min.js"></script>
+<script src="dash-local.js"></script>
+</head>
+<body>
+<div id="dash-root">
+<style>
+#dash-root .g20 { font-family: var(--font-anthropic-sans); color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.g20 .g20-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-sm); }
+.g20 .g20-take { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin: 0; max-width: 62rem; line-height: 1.5; }
+.g20 .g20-take b { font-weight: 600; color: var(--color-fg); }
+.g20 .g20-section { margin-top: var(--cds-gap-xl); }
+.g20 .g20-section > h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-sm); }
+.g20 .g20-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.g20 .g20-card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.g20 .g20-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 var(--cds-gap-md); line-height: 1.4; }
+.g20 .g20-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
+.g20 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: var(--cds-gap-md); }
+.g20 .g20-chart { position: relative; min-height: 12rem; }
+.g20 .grafico { position: relative; min-height: 20rem; }
+.g20 .g20-chart svg, .g20 .grafico svg { display: block; overflow: visible; }
+.g20 svg text { font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); font-family: var(--font-anthropic-sans); }
+.g20 svg text.is-sel { fill: var(--color-fg); font-weight: 600; }
+.g20 svg text.forte { fill: var(--color-fg); }
+.g20 .g20-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.g20 .g20-fail::before { content: ""; width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--color-bad); }
+.g20 .vazio-graf { display: flex; align-items: center; justify-content: center; min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); text-align: center; padding: var(--cds-pad-lg); }
+.g20 .g20-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 3; }
+.g20 .g20-tip .t-h { color: var(--cds-text-secondary); }
+.g20 .g20-tip .t-l { display: flex; align-items: center; gap: 0.35rem; }
+.g20 .g20-tip i { width: 0.6rem; height: 0.6rem; border-radius: 50%; display: inline-block; }
+.g20 table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); }
+.g20 th, .g20 td { text-align: right; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.g20 th:first-child, .g20 td:first-child, .g20 th.esq, .g20 td.esq { text-align: left; }
+.g20 th { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); vertical-align: bottom; }
+.g20 th.is-on { color: var(--color-fg); }
+.g20 .g20-scroll { overflow: auto; max-height: 36rem; }
+.g20 .g20-scroll th { position: sticky; top: 0; background: var(--color-panel); z-index: 1; }
+.g20 .g20-sort { all: unset; cursor: pointer; display: inline-flex; gap: 0.25rem; align-items: center; }
+.g20 .g20-sort:focus-visible { outline: 2px solid var(--color-fg-muted); outline-offset: 2px; }
+.g20 tr.is-sel td { background: var(--cds-chart-grid); font-weight: 600; }
+.g20 .clicavel tbody tr { cursor: pointer; }
+.g20 td.is-na { color: var(--color-fg-muted); }
+.g20 .g20-tools { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; margin-bottom: var(--cds-gap-sm); }
+.g20 .g20-search, .g20 select { font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg); background: var(--color-bg); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); min-width: 0; max-width: 100%; }
+.g20 .g20-search { width: min(100%, 16rem); }
+.g20 .g20-notes { margin: var(--cds-gap-md) 0 0; padding-left: 1.1rem; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.g20 .g20-notes b { color: var(--color-fg); font-weight: 600; }
+.g20 .g20-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-lg); line-height: 1.5; max-width: 62rem; }
+.g20 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.g20 [data-dash-source-state=empty] { color: transparent; }
+
+.g20 .tabs { display: flex; flex-wrap: wrap; gap: 0 var(--cds-gap-md); border-bottom: 1px solid var(--color-border-line); margin: var(--cds-gap-lg) 0 0; }
+.g20 .tab { all: unset; cursor: pointer; padding: var(--cds-pad-sm) 0; font-size: var(--cds-font-size-body); color: var(--color-fg-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.g20 .tab[aria-selected=true] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.g20 .tab:focus-visible { outline: 2px solid var(--color-fg-muted); outline-offset: 2px; }
+.g20 .seg { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+.g20 .seg button, .g20 .btn { all: unset; cursor: pointer; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); color: var(--color-fg-muted); background: var(--color-bg); line-height: 1.4; }
+.g20 .seg button[aria-pressed=true] { color: var(--color-fg); border-color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); }
+.g20 .seg button:focus-visible, .g20 .btn:focus-visible { outline: 2px solid var(--color-fg-muted); outline-offset: 2px; }
+.g20 .filtros { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: flex-end; }
+.g20 .campo { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.g20 .campo > span:first-child { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.g20 .campo[hidden] { display: none; }
+.g20 .ano-ctl { display: flex; align-items: center; gap: var(--cds-gap-sm); }
+.g20 .ano-ctl input[type=range] { width: min(16rem, 52vw); accent-color: var(--color-fg-muted); }
+.g20 .ano-ctl output { font-weight: 600; min-width: 2.5rem; }
+.g20 .proj { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); padding: 0 var(--cds-pad-xs); }
+.g20 .mundo-row { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: stretch; }
+.g20 .mapa-card { flex: 3 1 34rem; }
+.g20 .lado { flex: 1 1 17rem; display: flex; flex-direction: column; gap: var(--cds-gap-md); min-width: 0; }
+.g20 .mapa { position: relative; min-height: 16rem; }
+.g20 .mapa svg { display: block; touch-action: none; cursor: grab; }
+.g20 .mapa path.pais { stroke: var(--color-panel); stroke-width: 0.5; vector-effect: non-scaling-stroke; cursor: pointer; fill-rule: evenodd; }
+.g20 .mapa path.pais.is-fora { opacity: 0.3; cursor: default; }
+.g20 .mapa path.pais.is-sel { stroke: var(--color-fg); stroke-width: 1.6; }
+.g20 .mapa path.pais:not(.is-fora):hover { stroke: var(--color-fg-muted); stroke-width: 1.2; }
+.g20 .zoom { position: absolute; right: var(--cds-pad-xs); top: var(--cds-pad-xs); display: flex; flex-direction: column; gap: var(--cds-gap-xs); z-index: 2; }
+.g20 .zoom button { all: unset; cursor: pointer; width: 1.75rem; height: 1.75rem; display: flex; align-items: center; justify-content: center; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); font-size: var(--cds-font-size-body); color: var(--color-fg); }
+.g20 .legenda { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); margin-top: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.g20 .legenda span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.g20 .legenda i { width: 0.9rem; height: 0.65rem; border-radius: 2px; display: inline-block; }
+.g20 .legenda i.ponto { width: 0.6rem; height: 0.6rem; border-radius: 50%; }
+.g20 .legenda i.traco { height: 2px; border-radius: 0; }
+.g20 .ficha-head { display: flex; align-items: baseline; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+.g20 .ficha-head h3 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+.g20 .badge { font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 0 var(--cds-pad-xs); color: var(--color-fg-muted); }
+.g20 .vazio { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin: var(--cds-gap-sm) 0 0; line-height: 1.5; }
+.g20 dl.ficha { display: grid; grid-template-columns: 1fr auto; gap: var(--cds-gap-xs) var(--cds-gap-md); margin: 0; font-size: var(--cds-font-size-body); }
+.g20 dl.ficha dt { color: var(--color-fg-muted); }
+.g20 dl.ficha dt.grupo { grid-column: 1 / -1; color: var(--color-fg); font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); margin-top: var(--cds-gap-sm); }
+.g20 dl.ficha dd { margin: 0; text-align: right; }
+.g20 dl.ficha .is-on { color: var(--color-fg); font-weight: 600; }
+.g20 .ficha-scroll { max-height: 30rem; overflow: auto; }
+.g20 .posicao { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-md) 0 0; }
+.g20 .extremos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); }
+.g20 .extremos h4 { margin: 0 0 var(--cds-gap-xs); font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); }
+.g20 .extremos ol { margin: 0; padding-left: 1.1rem; line-height: 1.6; }
+.g20 .extremos li { cursor: pointer; }
+.g20 .extremos li b { font-weight: 600; }
+.g20 .grafico circle, .g20 .grafico rect.cel { cursor: pointer; }
+.g20 .chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
+.g20 .chip { display: inline-flex; align-items: center; gap: 0.35rem; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 0.15rem var(--cds-pad-xs) 0.15rem var(--cds-pad-sm); background: var(--color-bg); }
+.g20 .chip i { width: 0.6rem; height: 0.6rem; border-radius: 50%; display: inline-block; }
+.g20 .chip button { all: unset; cursor: pointer; color: var(--color-fg-muted); padding: 0 0.2rem; }
+.g20 .chip button:focus-visible { outline: 2px solid var(--color-fg-muted); }
+.g20 [hidden] { display: none !important; }
+.g20 .corrida { position: relative; min-height: 22rem; }
+.g20 .corrida svg { display: block; overflow: visible; }
+.g20 .corrida svg text.nome { fill: var(--color-fg); font-size: var(--cds-font-size-body); }
+.g20 .corrida svg text.nome.is-sel { font-weight: 600; }
+.g20 .corrida svg text.valor { fill: var(--color-fg-muted); font-size: var(--cds-font-size-body); }
+.g20 .corrida svg text.ano-grande { font-size: calc(var(--cds-font-size-title) * 2.8); font-weight: 600; fill: var(--color-fg-muted); opacity: 0.4; font-variant-numeric: tabular-nums; }
+.g20 .corrida svg text.ano-proj { font-size: var(--cds-font-size-body); fill: var(--color-fg-muted); }
+.g20 #card-corrida:fullscreen { background: var(--color-bg); padding: var(--cds-gap-xl); overflow: auto; }
+.g20 #card-corrida:fullscreen .corrida svg text.nome, .g20 #card-corrida:fullscreen .corrida svg text.valor { font-size: var(--cds-font-size-heading); }
+</style>
+
+<div class="g20">
+  <header class="g20-head" id="topo">
+    <h1>Economia mundial e G20</h1>
+    <p class="g20-take">
+      O FMI projeta crescimento mundial de <b class="g20-v dash-skeleton" data-source="mundo_resumo" data-field="crescimento_mundial" data-row="0">—</b>% em 2026.
+      Das <b class="g20-v dash-skeleton" data-source="mundo_resumo" data-field="economias" data-row="0">—</b> economias com projeção,
+      <b class="g20-v dash-skeleton" data-source="mundo_resumo" data-field="em_queda" data-row="0">—</b> devem encolher e
+      <b class="g20-v dash-skeleton" data-source="mundo_resumo" data-field="inflacao_acima_10" data-row="0">—</b> terão inflação acima de 10%.
+      A base histórica cobre <b class="g20-v dash-skeleton" data-source="mundo_resumo" data-field="economias_base" data-row="0">—</b> economias, de
+      <span class="g20-v dash-skeleton" data-source="mundo_resumo" data-field="ano_inicial" data-row="0">—</span> a
+      <span class="g20-v dash-skeleton" data-source="mundo_resumo" data-field="ano_final" data-row="0">—</span>.
+    </p>
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button class="tab" role="tab" data-tab="mundo" aria-selected="true">Mundo</button>
+      <button class="tab" role="tab" data-tab="continentes" aria-selected="false">Continentes</button>
+      <button class="tab" role="tab" data-tab="historico" aria-selected="false">Histórico</button>
+      <button class="tab" role="tab" data-tab="correlacoes" aria-selected="false">Correlações</button>
+      <button class="tab" role="tab" data-tab="g20" aria-selected="false">G20 em detalhe</button>
+    </nav>
+  </header>
+
+  <section class="g20-section" id="filtros" style="margin-top: var(--cds-gap-md)">
+    <div class="filtros">
+      <label class="campo" data-abas="mundo continentes historico correlacoes g20"><span>Continente</span><select id="f-cont"></select></label>
+      <label class="campo" data-abas="mundo continentes historico correlacoes"><span>Sub-região</span><select id="f-sub"></select></label>
+      <div class="campo" data-abas="mundo correlacoes"><span>Grupo</span>
+        <div class="seg" id="f-grupo" role="group" aria-label="Grupo">
+          <button data-grupo="todos">Todos</button><button data-grupo="g20">Só G20</button>
+        </div>
+      </div>
+      <label class="campo" data-abas="mundo historico correlacoes g20"><span>País</span><select id="f-pais"></select></label>
+      <label class="campo" data-abas="mundo continentes historico"><span>Indicador</span><select id="f-ind"></select></label>
+      <div class="campo" data-abas="mundo continentes historico correlacoes"><span>Ano</span>
+        <div class="ano-ctl">
+          <input type="range" id="f-ano" step="1" aria-label="Ano">
+          <output id="ano-rot" for="f-ano"></output>
+          <button class="btn" id="f-play" aria-label="Animar os anos">▶ Animar</button>
+          <span class="proj" id="ano-proj" hidden>projeção</span>
+        </div>
+      </div>
+      <div class="campo" data-abas="mundo continentes historico correlacoes g20"><span>&nbsp;</span><button class="btn" id="f-limpar">Limpar filtros</button></div>
+    </div>
+  </section>
+
+  <!-- ===================== MUNDO ===================== -->
+  <div class="pagina" id="mundo">
+    <section class="g20-section" style="margin-top: var(--cds-gap-md)">
+      <div class="campo" style="margin-bottom: var(--cds-gap-md)"><span>Visão</span>
+        <div class="seg" id="m-visao" role="group" aria-label="Visão">
+          <button data-v="mapa">Mapa</button><button data-v="barras">Corrida de barras</button>
+        </div>
+      </div>
+      <div class="g20-card" id="card-corrida" hidden>
+        <h3 id="corrida-titulo">Corrida de barras</h3>
+        <p class="g20-note" id="corrida-nota">As barras mostram os países com os maiores valores a cada ano e trocam de posição durante a animação. Entre um ano e outro os valores são interpolados para o movimento ficar suave; só entram países com dado. O indicador, os filtros de continente e grupo e o ano de partida vêm dos filtros acima. PIB em dólares, PIB em PPC, população e PIB per capita rendem as corridas mais interessantes.</p>
+        <div class="filtros" style="margin-bottom: var(--cds-gap-md)">
+          <div class="campo"><span>&nbsp;</span>
+            <div class="seg">
+              <button class="btn" id="cr-play">▶ Reproduzir</button>
+              <button class="btn" id="cr-inicio">⟲ Do início</button>
+            </div>
+          </div>
+          <div class="campo"><span>Velocidade</span>
+            <div class="seg" id="cr-vel" role="group" aria-label="Velocidade"><button data-v="2000">Lenta</button><button data-v="1000">Normal</button><button data-v="500">Rápida</button></div>
+          </div>
+          <div class="campo"><span>Países no ranking</span>
+            <div class="seg" id="cr-top" role="group" aria-label="Países no ranking"><button data-v="10">10</button><button data-v="15">15</button><button data-v="20">20</button></div>
+          </div>
+          <div class="campo"><span>Termina em</span>
+            <div class="seg" id="cr-ate" role="group" aria-label="Último ano"><button data-v="2025">2025</button><button data-v="2031">2031 (com projeções)</button></div>
+          </div>
+          <div class="campo"><span>&nbsp;</span><button class="btn" id="cr-tela" hidden>⛶ Tela cheia</button></div>
+        </div>
+        <div class="corrida dash-skeleton" id="corrida" data-source="historico paises"></div>
+        <div class="legenda" id="corrida-legenda" data-source="paises"></div>
+      </div>
+      <div class="mundo-row">
+        <div class="g20-card mapa-card" id="card-mapa">
+          <h3 id="mapa-titulo">Mapa</h3>
+          <p class="g20-note" id="mapa-nota"></p>
+          <div class="mapa dash-skeleton" id="mapa" data-source="historico contornos paises"></div>
+          <div class="legenda" id="legenda" data-source="historico"></div>
+        </div>
+        <div class="lado">
+          <div class="g20-card" id="ficha">
+            <p class="vazio" id="ficha-vazia" style="margin-top:0">Escolha um país no mapa, no filtro País ou na tabela para ver todos os números dele no ano escolhido.</p>
+            <div id="ficha-corpo" hidden></div>
+          </div>
+          <div class="g20-card" id="card-extremos">
+            <h3 id="extremos-titulo">Extremos</h3>
+            <p class="g20-note">No ano e nos filtros escolhidos. Clique num nome para selecionar o país.</p>
+            <div class="extremos" data-source="historico">
+              <div><h4>Maiores valores</h4><ol id="ext-maiores"></ol></div>
+              <div><h4>Menores valores</h4><ol id="ext-menores"></ol></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="g20-section" id="ranking">
+      <h2 id="ranking-titulo">Todos os países</h2>
+      <div class="g20-card">
+        <div class="g20-tools">
+          <input class="g20-search" id="busca-mundo" type="search" placeholder="Buscar país" aria-label="Buscar país">
+          <span class="g20-note" style="margin:0">Segue os filtros e o ano acima. Clique num título para ordenar e numa linha para selecionar o país.</span>
+        </div>
+        <div class="g20-scroll">
+          <table id="tabela-mundo" class="clicavel" data-source="historico" data-row-key="chave"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== CONTINENTES ===================== -->
+  <div class="pagina" id="continentes" hidden>
+    <section class="g20-section" style="margin-top: var(--cds-gap-md)">
+      <div class="filtros">
+        <div class="campo"><span>Agrupar por</span>
+          <div class="seg" id="c-agrupar" role="group" aria-label="Agrupar por">
+            <button data-v="continente">Continente</button><button data-v="sub_regiao">Sub-região</button>
+          </div>
+        </div>
+        <div class="campo"><span>Estatística</span>
+          <div class="seg" id="c-stat" role="group" aria-label="Estatística"></div>
+        </div>
+      </div>
+      <p class="g20-note" id="c-stat-nota" style="margin-top: var(--cds-gap-sm)"></p>
+    </section>
+    <section class="g20-section" style="margin-top: var(--cds-gap-md)">
+      <div class="grid2">
+        <div class="g20-card">
+          <h3 id="c-barras-titulo">Comparação no ano</h3>
+          <p class="g20-note">A barra tracejada é o valor do mundo inteiro, com a mesma estatística. Clique numa barra para filtrar o continente.</p>
+          <div class="grafico dash-skeleton" id="c-barras" data-source="continentes"></div>
+        </div>
+        <div class="g20-card">
+          <h3 id="c-linhas-titulo">Evolução</h3>
+          <p class="g20-note">A faixa sombreada marca as projeções do FMI. Passe o mouse para ver os valores; clique para mudar o ano.</p>
+          <div class="grafico dash-skeleton" id="c-linhas" data-source="continentes"></div>
+        </div>
+      </div>
+    </section>
+    <section class="g20-section">
+      <h2 id="c-tabela-titulo">Quadro comparativo</h2>
+      <div class="g20-card">
+        <p class="g20-note" style="margin-top:0" id="c-tabela-nota"></p>
+        <div class="g20-scroll" style="max-height:none">
+          <table id="tabela-cont" data-source="continentes" data-row-key="chave"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== HISTÓRICO ===================== -->
+  <div class="pagina" id="historico" hidden>
+    <section class="g20-section" style="margin-top: var(--cds-gap-md)">
+      <div class="g20-card">
+        <div class="filtros" style="margin-bottom: var(--cds-gap-md)">
+          <div class="campo" style="flex: 1 1 20rem"><span>Países comparados (até 8)</span>
+            <div class="chips" id="h-chips">
+              <select id="h-add" aria-label="Adicionar país"></select>
+              <button class="btn" id="h-limpar">Limpar</button>
+            </div>
+          </div>
+          <div class="campo"><span>Escala</span>
+            <div class="seg" id="h-escala" role="group" aria-label="Escala"><button data-v="linear">Linear</button><button data-v="log">Logarítmica</button></div>
+          </div>
+          <div class="campo"><span>Referências</span>
+            <div class="seg" id="h-ref" role="group" aria-label="Referências">
+              <button data-v="mundo">Mundo (FMI)</button><button data-v="mediana">Mediana do continente</button>
+            </div>
+          </div>
+        </div>
+        <h3 id="h-titulo">Evolução</h3>
+        <p class="g20-note" id="h-nota"></p>
+        <div class="grafico dash-skeleton" id="h-linhas" data-source="historico agregados continentes" style="min-height: 24rem"></div>
+      </div>
+    </section>
+    <section class="g20-section">
+      <h2>Médias por período</h2>
+      <div class="g20-card">
+        <p class="g20-note" style="margin-top:0">Média simples dos anos com dado em cada período, para o indicador escolhido. Nos continentes, média das medianas anuais.</p>
+        <div class="g20-scroll" style="max-height:none">
+          <table id="tabela-decadas" data-source="medias_decada" data-row-key="chave"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== CORRELAÇÕES ===================== -->
+  <div class="pagina" id="correlacoes" hidden>
+    <section class="g20-section" style="margin-top: var(--cds-gap-md)">
+      <div class="filtros">
+        <div class="campo"><span>Comparar</span>
+          <div class="seg" id="r-modo" role="group" aria-label="Modo">
+            <button data-v="paises">Entre países, num ano</button><button data-v="tempo">Ao longo do tempo, num país</button>
+          </div>
+        </div>
+        <label class="campo"><span>Eixo horizontal (X)</span><select id="r-x"></select></label>
+        <div class="campo"><span>&nbsp;</span><button class="btn" id="r-trocar" aria-label="Trocar os eixos">⇄ Trocar</button></div>
+        <label class="campo"><span>Eixo vertical (Y)</span><select id="r-y"></select></label>
+        <div class="campo"><span>Escala X</span><div class="seg" id="r-ex" role="group" aria-label="Escala do eixo X"><button data-v="linear">Linear</button><button data-v="log">Log</button></div></div>
+        <div class="campo"><span>Escala Y</span><div class="seg" id="r-ey" role="group" aria-label="Escala do eixo Y"><button data-v="linear">Linear</button><button data-v="log">Log</button></div></div>
+        <div class="campo" id="r-periodo-campo"><span>Anos no cálculo</span><div class="seg" id="r-periodo" role="group" aria-label="Anos"><button data-v="2025">Até 2025</button><button data-v="2031">Com projeções</button></div></div>
+      </div>
+    </section>
+    <section class="g20-section" style="margin-top: var(--cds-gap-md)">
+      <div class="g20-card">
+        <h3 id="r-titulo">Dispersão</h3>
+        <p class="g20-note" id="r-nota"></p>
+        <div class="grafico dash-skeleton" id="r-disp" data-source="historico paises" style="min-height: 26rem"></div>
+        <div class="legenda" id="r-legenda" data-source="paises"></div>
+      </div>
+    </section>
+    <section class="g20-section">
+      <div class="g20-card">
+        <h3>Matriz de correlação</h3>
+        <p class="g20-note" id="r-matriz-nota"></p>
+        <div class="grafico dash-skeleton" id="r-matriz" data-source="historico paises" style="min-height: 22rem"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===================== G20 ===================== -->
+  <div class="pagina" id="g20" hidden>
+    <section class="g20-section" id="resumo-g20" style="margin-top: var(--cds-gap-md)">
+      <p class="g20-take">
+        No G20, a inflação em 12 meses vai de <b class="g20-v dash-skeleton" data-source="g20_resumo" data-field="inflacao_min" data-row="0">—</b>%
+        (<span class="g20-v dash-skeleton" data-source="g20_resumo" data-field="inflacao_min_pais" data-row="0">—</span>) a
+        <b class="g20-v dash-skeleton" data-source="g20_resumo" data-field="inflacao_max" data-row="0">—</b>%
+        (<span class="g20-v dash-skeleton" data-source="g20_resumo" data-field="inflacao_max_pais" data-row="0">—</span>), e o desemprego, de
+        <b class="g20-v dash-skeleton" data-source="g20_resumo" data-field="desemprego_min" data-row="0">—</b>%
+        (<span class="g20-v dash-skeleton" data-source="g20_resumo" data-field="desemprego_min_pais" data-row="0">—</span>) a
+        <b class="g20-v dash-skeleton" data-source="g20_resumo" data-field="desemprego_max" data-row="0">—</b>%
+        (<span class="g20-v dash-skeleton" data-source="g20_resumo" data-field="desemprego_max_pais" data-row="0">—</span>).
+        Esta aba usa os últimos dados divulgados por cada país; o filtro de continente vale para os gráficos e a tabela.
+      </p>
+    </section>
+
+    <section class="g20-section" id="comparar">
+      <h2>Compare um país com o G20</h2>
+      <div class="g20-card">
+        <p class="vazio" id="comparar-vazio" style="margin-top:0">Escolha um país do G20 no filtro País para ver seus últimos dados ao lado da mediana do grupo.</p>
+        <div class="g20-scroll" style="max-height:none" id="comparar-corpo" hidden>
+          <p class="g20-note" style="margin-top:0">Últimos dados, em %. Mediana e posição entre os 19 países, sem a zona do euro; a posição conta a partir do extremo mais próximo.</p>
+          <table id="tabela-comparar" data-source="g20_comparacao" data-row-key="chave">
+            <thead><tr>
+              <th data-field="nome">Indicador</th>
+              <th data-field="valor" id="comparar-th">País</th>
+              <th data-field="mediana">Mediana do G20</th>
+              <th data-field="posicao_txt">Posição</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="g20-section" id="graficos">
+      <h2>Comparações</h2>
+      <div class="g20-grid">
+        <div class="g20-card">
+          <h3>Crescimento projetado para 2026</h3>
+          <p class="g20-note">Projeção do FMI para o PIB, em %. A linha tracejada é a média mundial.</p>
+          <div class="g20-chart dash-skeleton" id="grafico-fmi" data-source="fmi"></div>
+        </div>
+        <div class="g20-card">
+          <h3>Juro real</h3>
+          <p class="g20-note">Juros básicos menos a inflação em 12 meses, em pontos percentuais.</p>
+          <div class="g20-chart dash-skeleton" id="grafico-juro-real" data-source="juro_real"></div>
+        </div>
+        <div class="g20-card">
+          <h3>Dívida pública</h3>
+          <p class="g20-note">% do PIB, fim de 2025, pela definição de cada país.</p>
+          <div class="g20-chart dash-skeleton" id="grafico-divida" data-source="indicadores"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="g20-section" id="tabela">
+      <h2>Últimos indicadores do G20</h2>
+      <div class="g20-card">
+        <div class="g20-tools">
+          <input class="g20-search" id="busca-g20" type="search" placeholder="Buscar país" aria-label="Buscar país">
+          <span class="g20-note" style="margin:0">Clique num título para ordenar e numa linha para selecionar o país. Passe o mouse sobre um valor para ver o período de referência.</span>
+        </div>
+        <div class="g20-scroll">
+          <table id="tabela-g20" class="clicavel" data-source="indicadores" data-row-key="pais">
+            <thead><tr>
+              <th data-field="pais"><button class="g20-sort" data-col="pais">País</button></th>
+              <th data-field="pib_12m"><button class="g20-sort" data-col="pib_12m">PIB 12 meses (%)</button></th>
+              <th data-source="fmi" data-field="fmi_2026"><button class="g20-sort" data-col="fmi_2026">FMI 2026 (%)</button></th>
+              <th data-field="prod_ind"><button class="g20-sort" data-col="prod_ind">Prod. industrial (%)</button></th>
+              <th data-field="inflacao"><button class="g20-sort" data-col="inflacao">Inflação (%)</button></th>
+              <th data-field="nucleo"><button class="g20-sort" data-col="nucleo">Núcleo (%)</button></th>
+              <th data-field="desemprego"><button class="g20-sort" data-col="desemprego">Desemprego (%)</button></th>
+              <th data-field="juros"><button class="g20-sort" data-col="juros">Juros básicos (%)</button></th>
+              <th data-field="titulo_10a"><button class="g20-sort" data-col="titulo_10a">Título 10 anos (%)</button></th>
+              <th data-field="deficit"><button class="g20-sort" data-col="deficit">Saldo fiscal (% PIB)</button></th>
+              <th data-field="divida"><button class="g20-sort" data-col="divida">Dívida (% PIB)</button></th>
+              <th data-field="rating_sp"><button class="g20-sort" data-col="rating_sp">Rating S&amp;P</button></th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <ul class="g20-notes" id="notas"></ul>
+      </div>
+    </section>
+  </div>
+
+  <p class="g20-foot">Fontes: FMI, pela API do DataMapper — World Economic Outlook de outubro de 2026 (atividade, preços, emprego, setor externo, saldo e dívida do governo), Fiscal Monitor (receita, despesa, saldo primário e dívida líquida), Global Debt Database (dívida privada) e Public Finances in Modern History (juros da dívida e juro real de longo prazo); tabelas por país da Trading Economics (aba G20); contornos da Natural Earth; continentes e sub-regiões pela classificação do pacote world-countries, com o Oriente Médio e o Cáucaso dentro da Ásia. A partir de 2026 os números são projeções do FMI, e os anos mais recentes de cada país podem ser estimativas. Medianas e médias por continente são calculadas aqui, a partir dos países.</p>
+</div>
+
+<script>
+window.g20 = (() => {
+  const nf = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
+  const fmt = (v) => (v == null || Number.isNaN(v) ? '—' : nf.format(v));
+  const parseWhere = (w) => {
+    const i = w.indexOf('=');
+    return [decodeURIComponent(w.slice(0, i)), decodeURIComponent(w.slice(i + 1))];
+  };
+  const fillMark = (el) => {
+    const st = dash.data(el.dataset.source);
+    if (st.status !== 'ok') {
+      el.textContent = '—';
+      el.classList.toggle('dash-skeleton', st.status === 'loading');
+      return;
+    }
+    el.classList.remove('dash-skeleton');
+    let row = null;
+    if (el.dataset.row != null) row = st.data[Number(el.dataset.row)];
+    else {
+      const [k, v] = parseWhere(el.dataset.where);
+      row = st.data.find((r) => String(r[k]) === v);
+    }
+    const val = row ? row[el.dataset.field] : null;
+    el.textContent = typeof val === 'number' ? fmt(val) : (val ?? '—');
+  };
+  const failBox = (box) => {
+    box.replaceChildren();
+    box.classList.remove('dash-skeleton');
+    const d = document.createElement('div');
+    d.className = 'g20-fail';
+    d.textContent = 'Failed to load';
+    box.appendChild(d);
+  };
+  const vazioBox = (box, texto) => {
+    box.replaceChildren();
+    box.classList.remove('dash-skeleton');
+    const d = document.createElement('div');
+    d.className = 'vazio-graf';
+    d.textContent = texto;
+    box.appendChild(d);
+  };
+  // Handle the loading and error states of a chart box; true when every source is ready
+  const pronto = (box, fontes) => {
+    const st = fontes.map((f) => dash.data(f));
+    if (st.some((s) => s.status === 'error')) { failBox(box); return false; }
+    if (st.some((s) => s.status !== 'ok')) { box.replaceChildren(); box.classList.add('dash-skeleton'); return false; }
+    box.classList.remove('dash-skeleton');
+    return true;
+  };
+  const isShown = (el) => !el.closest('.pagina[hidden]');
+  const draws = [];
+  const redraw = () => draws.forEach((f) => f());
+
+  // ---- Indicators
+  const INDS = [
+    { k: 'pib_real', grupo: 'Atividade', nome: 'Crescimento do PIB real', curto: 'crescimento do PIB', un: '%', tipo: 'taxa', peso: 'pib_ppc', cortes: [-2, 0, 2, 4, 6], div: true, log: false },
+    { k: 'pib_usd', grupo: 'Atividade', nome: 'PIB em dólares', curto: 'PIB em dólares', un: 'US$ bi', tipo: 'nivel', cortes: [10, 50, 200, 1000, 5000], div: false, log: true },
+    { k: 'pib_per_capita', grupo: 'Atividade', nome: 'PIB per capita em dólares', curto: 'PIB per capita', un: 'US$', tipo: 'taxa', peso: 'populacao', cortes: [2000, 5000, 15000, 40000, 70000], div: false, log: true },
+    { k: 'pib_ppc', grupo: 'Atividade', nome: 'PIB em paridade de poder de compra', curto: 'PIB em PPC', un: 'Int$ bi', tipo: 'nivel', cortes: [20, 100, 500, 2000, 10000], div: false, log: true },
+    { k: 'pib_per_capita_ppc', grupo: 'Atividade', nome: 'PIB per capita em PPC', curto: 'PIB per capita em PPC', un: 'Int$', tipo: 'taxa', peso: 'populacao', cortes: [5000, 10000, 25000, 50000, 80000], div: false, log: true },
+    { k: 'participacao_pib_mundial', grupo: 'Atividade', nome: 'Participação no PIB mundial (PPC)', curto: 'participação no PIB mundial', un: '% do mundo', tipo: 'nivel', cortes: [0.05, 0.2, 0.5, 1, 3], div: false, log: true },
+    { k: 'populacao', grupo: 'Atividade', nome: 'População', curto: 'população', un: 'milhões', tipo: 'nivel', cortes: [1, 5, 20, 50, 150], div: false, log: true },
+    { k: 'inflacao', grupo: 'Preços e emprego', nome: 'Inflação média ao consumidor', curto: 'inflação', un: '%', tipo: 'taxa', peso: 'pib_ppc', cortes: [2, 3, 5, 10, 25], div: false, log: true },
+    { k: 'inflacao_dezembro', grupo: 'Preços e emprego', nome: 'Inflação em 12 meses até dezembro', curto: 'inflação de dezembro', un: '%', tipo: 'taxa', peso: 'pib_ppc', cortes: [2, 3, 5, 10, 25], div: false, log: true },
+    { k: 'desemprego', grupo: 'Preços e emprego', nome: 'Taxa de desemprego', curto: 'desemprego', un: '%', tipo: 'taxa', peso: 'populacao', cortes: [3, 5, 7, 10, 15], div: false, log: false },
+    { k: 'conta_corrente', grupo: 'Setor externo', nome: 'Saldo em conta corrente', curto: 'conta corrente', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [-6, -3, 0, 3, 6], div: true, log: false },
+    { k: 'conta_corrente_usd', grupo: 'Setor externo', nome: 'Conta corrente em dólares', curto: 'conta corrente em dólares', un: 'US$ bi', tipo: 'nivel', cortes: [-50, -5, 0, 5, 50], div: true, log: true },
+    { k: 'saldo_fiscal', grupo: 'Contas públicas', nome: 'Saldo do governo (nominal)', curto: 'saldo fiscal', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [-6, -4, -2, 0, 2], div: true, log: false },
+    { k: 'saldo_primario', grupo: 'Contas públicas', nome: 'Saldo primário do governo', curto: 'saldo primário', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [-4, -2, 0, 2, 4], div: true, log: false },
+    { k: 'saldo_primario_estrutural', grupo: 'Contas públicas', nome: 'Saldo primário ajustado ao ciclo', curto: 'saldo primário estrutural', un: '% do PIB potencial', tipo: 'taxa', peso: 'pib_ppc', cortes: [-4, -2, 0, 2, 4], div: true, log: false },
+    { k: 'receita_governo', grupo: 'Contas públicas', nome: 'Receita do governo', curto: 'receita do governo', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [15, 20, 30, 40, 45], div: false, log: false },
+    { k: 'despesa_governo', grupo: 'Contas públicas', nome: 'Despesa do governo', curto: 'despesa do governo', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [20, 25, 35, 45, 50], div: false, log: false },
+    { k: 'juros_divida', grupo: 'Contas públicas', nome: 'Juros pagos sobre a dívida pública', curto: 'juros da dívida', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [1, 2, 3, 4, 6], div: false, log: false },
+    { k: 'divida_publica', grupo: 'Dívida', nome: 'Dívida pública bruta', curto: 'dívida pública', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [30, 60, 90, 120, 150], div: false, log: false },
+    { k: 'divida_liquida', grupo: 'Dívida', nome: 'Dívida pública líquida', curto: 'dívida líquida', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [20, 40, 60, 80, 100], div: false, log: false },
+    { k: 'juro_real_longo', grupo: 'Dívida', nome: 'Juro real dos títulos longos do governo', curto: 'juro real longo', un: '%', tipo: 'taxa', peso: 'pib_ppc', cortes: [-2, 0, 2, 4, 6], div: true, log: false },
+    { k: 'divida_privada', grupo: 'Dívida', nome: 'Dívida privada', curto: 'dívida privada', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [50, 100, 150, 200, 250], div: false, log: false },
+    { k: 'divida_familias', grupo: 'Dívida', nome: 'Dívida das famílias', curto: 'dívida das famílias', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [10, 30, 50, 70, 90], div: false, log: false },
+    { k: 'divida_empresas', grupo: 'Dívida', nome: 'Dívida das empresas não financeiras', curto: 'dívida das empresas', un: '% do PIB', tipo: 'taxa', peso: 'pib_ppc', cortes: [30, 60, 90, 120, 150], div: false, log: false },
+  ];
+  const porK = Object.fromEntries(INDS.map((d) => [d.k, d]));
+  const comUn = (n, ind) => {
+    switch (ind.un) {
+      case '%': return `${n}%`;
+      case 'US$': return `US$ ${n}`;
+      case 'US$ bi': return `US$ ${n} bi`;
+      case 'Int$': return `${n} dólares PPC`;
+      case 'Int$ bi': return `${n} bi de dólares PPC`;
+      case 'milhões': return `${n} milhões`;
+      default: return `${n}% ${ind.un.replace('% ', '')}`;
+    }
+  };
+  const fmtU = (v, ind) => (v == null ? 'sem dado' : comUn(fmt(v), ind));
+  const rotUn = (ind) => ({ '%': '%', 'US$': 'US$', 'US$ bi': 'US$ bilhões', 'Int$': 'dólares PPC', 'Int$ bi': 'bilhões de dólares PPC', milhões: 'milhões' }[ind.un] || ind.un);
+  const preencheSelectInd = (sel, lista) => {
+    sel.replaceChildren();
+    const grupos = [...new Set(lista.map((d) => d.grupo))];
+    grupos.forEach((g) => {
+      const og = document.createElement('optgroup');
+      og.label = g;
+      lista.filter((d) => d.grupo === g).forEach((d) => og.appendChild(new Option(d.nome, d.k)));
+      sel.appendChild(og);
+    });
+  };
+
+  // ---- Continents
+  const CONTINENTES = ['África', 'América do Norte e Central', 'América do Sul', 'Ásia', 'Europa', 'Oceania'];
+  const corCont = (c) => (CONTINENTES.includes(c) ? dash.colors[CONTINENTES.indexOf(c) % dash.colors.length] : 'var(--cds-chart-muted)');
+
+  // ---- Params
+  const P = () => dash.params() || {};
+  const ANO_PROJ = 2026;
+  const anoSel = () => { const a = Number(P().ano); return a >= 1980 && a <= 2031 ? a : 2026; };
+  const indSel = () => porK[P().indicador] || porK.pib_real;
+  const contSel = () => (CONTINENTES.includes(P().continente) ? P().continente : 'todos');
+  const subSel = () => (P().sub_regiao && P().sub_regiao !== 'todas' ? P().sub_regiao : 'todas');
+  const grupoSel = () => (P().grupo === 'g20' ? 'g20' : 'todos');
+  const selIso = () => P().pais || null;
+  const selecionar = (iso3) => dash.setParams({ pais: iso3 || '' });
+  const passa = (p, comGrupo = true) => Boolean(p)
+    && (contSel() === 'todos' || p.continente === contSel())
+    && (subSel() === 'todas' || p.sub_regiao === subSel())
+    && (!comGrupo || grupoSel() === 'todos' || p.g20);
+
+  // ---- Cached indexes over datasets
+  const cache = {};
+  const indice = (fonte, chave) => {
+    const st = dash.data(fonte);
+    if (st.status !== 'ok') return null;
+    const id = `${fonte}|${chave}`;
+    if (!cache[id] || cache[id].src !== st.data) cache[id] = { src: st.data, m: new Map(st.data.map((r) => [r[chave], r])) };
+    return cache[id].m;
+  };
+  const porPais = () => {
+    const st = dash.data('historico');
+    if (st.status !== 'ok') return null;
+    if (!cache.porPais || cache.porPais.src !== st.data) {
+      const m = new Map();
+      st.data.forEach((r) => { if (!m.has(r.iso3)) m.set(r.iso3, []); m.get(r.iso3).push(r); });
+      m.forEach((l) => l.sort((a, b) => a.ano - b.ano));
+      cache.porPais = { src: st.data, m };
+    }
+    return cache.porPais.m;
+  };
+  const anosDados = () => {
+    const st = dash.data('historico');
+    if (st.status !== 'ok') return [1980, 2031];
+    return [d3.min(st.data, (r) => r.ano), d3.max(st.data, (r) => r.ano)];
+  };
+
+  // ---- Statistics
+  const mediana = (v) => {
+    if (!v.length) return null;
+    const s = v.slice().sort((a, b) => a - b);
+    const m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  };
+  const pearson = (xs, ys) => {
+    const n = xs.length;
+    if (n < 3) return null;
+    const mx = d3.mean(xs), my = d3.mean(ys);
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = 0; i < n; i += 1) { const a = xs[i] - mx, b = ys[i] - my; sxy += a * b; sxx += a * a; syy += b * b; }
+    return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null;
+  };
+  const postos = (v) => {
+    const idx = v.map((x, i) => [x, i]).sort((a, b) => a[0] - b[0]);
+    const r = new Array(v.length);
+    for (let i = 0; i < idx.length;) {
+      let j = i;
+      while (j + 1 < idx.length && idx[j + 1][0] === idx[i][0]) j += 1;
+      const p = (i + j) / 2 + 1;
+      for (let k = i; k <= j; k += 1) r[idx[k][1]] = p;
+      i = j + 1;
+    }
+    return r;
+  };
+  const spearman = (xs, ys) => pearson(postos(xs), postos(ys));
+  const tf = (v) => Math.sign(v) * Math.log1p(Math.abs(v));
+
+  // ---- Axis builder (linear or signed log)
+  const POT = new Set(d3.range(-2, 8).map((e) => 10 ** e));
+  const eixo = (tipo, vmin, vmax, r0, r1, gap, comZero) => {
+    if (tipo === 'log') {
+      let a = tf(vmin), b = tf(vmax);
+      if (a === b) { a -= 0.5; b += 0.5; }
+      const pad = (b - a) * 0.04;
+      const s = d3.scaleLinear([a - pad, b + pad], [r0, r1]);
+      const f = (v) => s(tf(v));
+      const cand = [0];
+      d3.range(-2, 8).forEach((e) => [1, 2, 5].forEach((m) => { const c = m * 10 ** e; cand.push(c, -c); }));
+      const dentro = cand.filter((c) => tf(c) >= a - pad && tf(c) <= b + pad).sort((x, y) => x - y);
+      const ticks = [];
+      const poe = (l) => l.forEach((c) => { if (ticks.every((t) => Math.abs(f(t) - f(c)) >= gap)) ticks.push(c); });
+      // Priority: zero, powers of ten from 1 up, then 2 and 5 multiples, then fractions
+      const grandes = (c) => Math.abs(c) >= 1;
+      poe(dentro.filter((c) => c === 0));
+      poe(dentro.filter((c) => grandes(c) && POT.has(Math.abs(c))).sort((x, y) => Math.abs(x) - Math.abs(y)));
+      poe(dentro.filter((c) => grandes(c) && !POT.has(Math.abs(c))).sort((x, y) => Math.abs(x) - Math.abs(y)));
+      poe(dentro.filter((c) => c !== 0 && !grandes(c)).sort((x, y) => Math.abs(y) - Math.abs(x)));
+      ticks.sort((x, y) => x - y);
+      return { f, ticks };
+    }
+    const lo = comZero ? Math.min(0, vmin) : vmin, hi = comZero ? Math.max(0, vmax) : vmax;
+    const s = d3.scaleLinear(lo === hi ? [lo - 1, hi + 1] : [lo, hi], [r0, r1]).nice();
+    return { f: s, ticks: s.ticks(Math.max(2, Math.floor(Math.abs(r1 - r0) / (gap * 2.2)))) };
+  };
+
+  const novoTip = (box) => {
+    const tip = document.createElement('div');
+    tip.className = 'g20-tip';
+    tip.hidden = true;
+    box.appendChild(tip);
+    tip.mostra = (event, titulo, linhas) => {
+      tip.replaceChildren();
+      const h = document.createElement('div');
+      h.className = 't-h';
+      h.textContent = titulo;
+      tip.appendChild(h);
+      linhas.forEach((l) => {
+        const d = document.createElement('div');
+        d.className = 't-l';
+        if (typeof l === 'string') d.textContent = l;
+        else { const i = document.createElement('i'); i.style.background = l.cor; d.append(i, document.createTextNode(l.texto)); }
+        tip.appendChild(d);
+      });
+      tip.hidden = false;
+      const [mx, my] = d3.pointer(event, box);
+      tip.style.left = `${Math.max(0, Math.min(mx + 12, box.clientWidth - tip.offsetWidth - 4))}px`;
+      tip.style.top = `${Math.max(0, Math.min(my + 12, box.clientHeight - tip.offsetHeight - 4))}px`;
+    };
+    return tip;
+  };
+  const corDe = (token, host) => {
+    const p = document.createElement('span');
+    p.style.color = token;
+    host.appendChild(p);
+    const c = getComputedStyle(p).color;
+    p.remove();
+    return c;
+  };
+  const medir = (svg) => (s) => { const t = svg.append('text').text(s); const w = t.node().getComputedTextLength(); t.remove(); return w; };
+
+  // ---- Horizontal bars
+  const bars = (box, rows, opt) => {
+    box.replaceChildren();
+    box.classList.remove('dash-skeleton');
+    const W = box.clientWidth;
+    if (!W || !rows.length) return;
+    const nome = opt.nome || ((d) => d.pais);
+    const destaque = opt.destaque;
+    const barH = 16, rowH = 24, top = opt.ref ? 22 : 6;
+    const H = top + rows.length * rowH + 4;
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    const measure = medir(svg);
+    const labelW = Math.min(W * 0.4, d3.max(rows, (d) => measure(nome(d))) || 0);
+    const valW = d3.max(rows, (d) => measure(fmt(opt.value(d)))) || 0;
+    const vals = rows.map(opt.value);
+    const refV = opt.ref ? opt.ref.value : 0;
+    const lo = Math.min(0, d3.min(vals), refV), hi = Math.max(0, d3.max(vals), refV);
+    const left = labelW + 10;
+    const padL = lo < 0 ? valW + 8 : 0, padR = hi > 0 ? valW + 8 : 0;
+    const x = d3.scaleLinear([lo, hi], [left + padL, Math.max(left + padL + 10, W - padR)]);
+    const tip = novoTip(box);
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', top - 4).attr('y2', H).style('stroke', 'var(--cds-chart-axis)');
+    const g = svg.selectAll('g.row').data(rows).join('g').attr('class', 'row').attr('transform', (d, i) => `translate(0,${top + i * rowH})`);
+    const cls = (d) => (destaque && nome(d) === destaque ? 'is-sel' : null);
+    g.append('text').attr('x', labelW).attr('y', rowH / 2).attr('dy', '0.35em').attr('text-anchor', 'end').attr('class', cls).text(nome);
+    g.append('rect')
+      .attr('x', (d) => Math.min(x(0), x(opt.value(d))))
+      .attr('y', (rowH - barH) / 2)
+      .attr('width', (d) => Math.max(1, Math.abs(x(opt.value(d)) - x(0))))
+      .attr('height', barH).attr('rx', 4)
+      .style('fill', (d) => (opt.cor ? opt.cor(d) : (!destaque || nome(d) === destaque ? dash.colors[0] : 'var(--cds-chart-muted)')));
+    g.append('text')
+      .attr('x', (d) => (opt.value(d) < 0 ? x(opt.value(d)) - 6 : x(opt.value(d)) + 6))
+      .attr('y', rowH / 2).attr('dy', '0.35em')
+      .attr('text-anchor', (d) => (opt.value(d) < 0 ? 'end' : 'start'))
+      .attr('class', cls)
+      .text((d) => fmt(opt.value(d)));
+    if (opt.ref) {
+      const rx = x(opt.ref.value);
+      svg.append('line').attr('x1', rx).attr('x2', rx).attr('y1', top - 4).attr('y2', H)
+        .style('stroke', 'var(--cds-chart-reference)').style('stroke-dasharray', '4 3');
+      svg.append('text').attr('x', rx).attr('y', 10)
+        .attr('text-anchor', rx > W - 80 ? 'end' : (rx < left + 40 ? 'start' : 'middle'))
+        .text(`${opt.ref.label} ${fmt(opt.ref.value)}`);
+    }
+    g.append('rect').attr('x', 0).attr('y', 0).attr('width', W).attr('height', rowH).style('fill', 'transparent').style('cursor', 'pointer')
+      .on('mousemove', (event, d) => tip.mostra(event, nome(d), opt.tip(d)))
+      .on('mouseleave', () => { tip.hidden = true; })
+      .on('click', (event, d) => { if (opt.onClick) opt.onClick(d); });
+  };
+
+  // ---- Lines over years; series: [{id, nome, cor, pts: [[ano, v]], forte, tracejada}]
+  const linhas = (box, series, opt) => {
+    box.replaceChildren();
+    box.classList.remove('dash-skeleton');
+    const W = box.clientWidth;
+    if (!W) return;
+    const comDado = series.filter((s) => s.pts.some((p) => p[1] != null));
+    if (!comDado.length) { vazioBox(box, opt.vazio || 'Sem dados para essa combinação.'); return; }
+    const vals = comDado.flatMap((s) => s.pts.filter((p) => p[1] != null).map((p) => p[1]));
+    const anos = comDado.flatMap((s) => s.pts.filter((p) => p[1] != null).map((p) => p[0]));
+    const a0 = d3.min(anos), a1 = d3.max(anos);
+    const H = opt.altura || 340;
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    const measure = medir(svg);
+    const mostraRot = comDado.length <= 8 && W > 480;
+    const mR = mostraRot ? Math.min(150, (d3.max(comDado, (s) => measure(s.nome)) || 0) + 14) : 10;
+    const mT = 18, mB = 24;
+    const y = eixo(opt.escala, d3.min(vals), d3.max(vals), H - mB, mT, 22, true);
+    const mL = (d3.max(y.ticks, (t) => measure(fmt(t))) || 0) + 8;
+    const x = d3.scaleLinear([a0, a1 === a0 ? a0 + 1 : a1], [mL, W - mR]);
+    if (a1 >= ANO_PROJ) {
+      const xp = x(Math.max(a0, ANO_PROJ - 0.5));
+      svg.append('rect').attr('x', xp).attr('y', mT).attr('width', Math.max(0, W - mR - xp)).attr('height', H - mB - mT).style('fill', 'var(--cds-chart-grid)').style('opacity', 0.6);
+      svg.append('text').attr('x', xp + 4).attr('y', mT - 5).text('Projeções');
+    }
+    y.ticks.forEach((t) => {
+      svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', y.f(t)).attr('y2', y.f(t)).style('stroke', t === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)');
+      svg.append('text').attr('x', mL - 6).attr('y', y.f(t)).attr('dy', '0.35em').attr('text-anchor', 'end').text(fmt(t));
+    });
+    let ultimo = -Infinity;
+    d3.range(Math.ceil(a0 / 5) * 5, a1 + 1, 5).forEach((t) => {
+      const xx = x(t), w = measure(String(t));
+      if (xx - w / 2 > ultimo + 8 && xx + w / 2 <= W) {
+        svg.append('text').attr('x', xx).attr('y', H - 6).attr('text-anchor', 'middle').text(String(t));
+        ultimo = xx + w / 2;
+      }
+    });
+    if (opt.ano != null && opt.ano >= a0 && opt.ano <= a1) {
+      svg.append('line').attr('x1', x(opt.ano)).attr('x2', x(opt.ano)).attr('y1', mT).attr('y2', H - mB).style('stroke', 'var(--cds-chart-reference)').style('stroke-dasharray', '4 3');
+    }
+    const linha = d3.line().defined((p) => p[1] != null).x((p) => x(p[0])).y((p) => y.f(p[1]));
+    comDado.forEach((s) => {
+      svg.append('path').attr('d', linha(s.pts)).style('fill', 'none').style('stroke', s.cor)
+        .style('stroke-width', s.forte ? 2.5 : 1.75).style('stroke-dasharray', s.tracejada ? '5 3' : null);
+      s.pts.forEach((p, i) => {
+        const solo = p[1] != null && (i === 0 || s.pts[i - 1][1] == null) && (i === s.pts.length - 1 || s.pts[i + 1][1] == null);
+        if (solo) svg.append('circle').attr('cx', x(p[0])).attr('cy', y.f(p[1])).attr('r', 2.5).style('fill', s.cor);
+      });
+    });
+    if (mostraRot) {
+      const fins = comDado.map((s) => { const p = s.pts.filter((q) => q[1] != null).pop(); return { s, x: x(p[0]), y: y.f(p[1]) }; }).sort((a, b) => a.y - b.y);
+      fins.forEach((f, i) => { if (i && f.y - fins[i - 1].y < 13) f.y = fins[i - 1].y + 13; });
+      const excesso = fins.length ? fins[fins.length - 1].y - (H - mB) : 0;
+      if (excesso > 0) fins.forEach((f) => { f.y -= excesso; });
+      fins.forEach((f) => {
+        svg.append('circle').attr('cx', W - mR + 6).attr('cy', f.y).attr('r', 3.5).style('fill', f.s.cor);
+        svg.append('text').attr('x', W - mR + 13).attr('y', f.y).attr('dy', '0.35em').attr('class', f.s.forte ? 'forte' : null).text(f.s.nome);
+      });
+    }
+    const tip = novoTip(box);
+    const regua = svg.append('line').attr('y1', mT).attr('y2', H - mB).style('stroke', 'var(--cds-chart-axis)').style('visibility', 'hidden');
+    svg.append('rect').attr('x', mL).attr('y', mT).attr('width', Math.max(0, W - mR - mL)).attr('height', H - mB - mT).style('fill', 'transparent').style('cursor', 'crosshair')
+      .on('mousemove', (event) => {
+        const [mx] = d3.pointer(event);
+        const ano = Math.round(x.invert(mx));
+        regua.attr('x1', x(ano)).attr('x2', x(ano)).style('visibility', 'visible');
+        const linhasTip = comDado.map((s) => ({ s, v: (s.pts.find((p) => p[0] === ano) || [])[1] }))
+          .filter((d) => d.v != null).sort((a, b) => b.v - a.v)
+          .map((d) => ({ cor: d.s.cor, texto: `${d.s.nome}: ${opt.fmtV ? opt.fmtV(d.v) : fmt(d.v)}` }));
+        tip.mostra(event, `${ano}${ano >= ANO_PROJ ? ' (projeção)' : ''}`, linhasTip.length ? linhasTip : ['sem dado']);
+      })
+      .on('mouseleave', () => { tip.hidden = true; regua.style('visibility', 'hidden'); })
+      .on('click', (event) => { if (opt.onAno) opt.onAno(Math.round(x.invert(d3.pointer(event)[0]))); });
+    if (!mostraRot && opt.legenda) {
+      opt.legenda.replaceChildren();
+      comDado.forEach((s) => {
+        const sp = document.createElement('span');
+        const i = document.createElement('i');
+        i.className = 'traco';
+        i.style.background = s.cor;
+        sp.append(i, document.createTextNode(s.nome));
+        opt.legenda.appendChild(sp);
+      });
+    } else if (opt.legenda) opt.legenda.replaceChildren();
+  };
+
+  return {
+    fmt, fmtU, comUn, rotUn, fillMark, failBox, vazioBox, pronto, isShown, draws, redraw, INDS, porK, preencheSelectInd,
+    CONTINENTES, corCont, P, ANO_PROJ, anoSel, indSel, contSel, subSel, grupoSel, selIso, selecionar, passa,
+    indice, porPais, anosDados, mediana, pearson, spearman, tf, eixo, novoTip, medir, corDe, bars, linhas,
+  };
+})();
+</script>
+
+<script>
+// ---- Calcs (each function is self-contained)
+(() => {
+  dash.calc('mundo_resumo', {
+    title: 'Resumo mundial',
+    description: 'Crescimento mundial projetado pelo FMI para 2026 (agregado oficial), quantas economias têm projeção de PIB para 2026, quantas devem encolher, quantas terão inflação acima de 10%, e a cobertura da base histórica.',
+    inputs: ['historico', 'agregados'],
+    fn: (historico, agregados) => {
+      const a26 = historico.filter((r) => r.ano === 2026);
+      const comPib = a26.filter((r) => r.pib_real != null);
+      const mundo = agregados.find((r) => r.codigo === 'WEOWORLD' && r.ano === 2026);
+      let ini = Infinity, fim = -Infinity;
+      historico.forEach((r) => { if (r.ano < ini) ini = r.ano; if (r.ano > fim) fim = r.ano; });
+      return [{
+        crescimento_mundial: mundo ? mundo.pib_real : null,
+        economias: comPib.length,
+        em_queda: comPib.filter((r) => r.pib_real < 0).length,
+        inflacao_acima_10: a26.filter((r) => r.inflacao != null && r.inflacao > 10).length,
+        economias_base: new Set(historico.map((r) => r.iso3)).size,
+        ano_inicial: String(ini),
+        ano_final: String(fim),
+      }];
+    },
+  });
+
+  dash.calc('miseria', {
+    title: 'Inflação + desemprego',
+    description: 'Soma da inflação média e da taxa de desemprego (o chamado índice de miséria), por país e ano, quando há os dois dados.',
+    inputs: ['historico'],
+    fn: (historico) => historico
+      .filter((r) => r.inflacao != null && r.desemprego != null)
+      .map((r) => ({ chave: r.chave, iso3: r.iso3, ano: r.ano, indice_miseria: Math.round((r.inflacao + r.desemprego) * 100) / 100 })),
+  });
+
+  dash.calc('posicoes', {
+    title: 'Posição de cada país no mundo, por ano',
+    description: 'Para cada país, ano e indicador, a posição entre as economias com dado naquele ano (1 = maior valor) e quantas economias têm dado.',
+    inputs: ['historico'],
+    fn: (historico) => {
+      const CAMPOS = ['pib_real', 'pib_usd', 'pib_per_capita', 'pib_ppc', 'pib_per_capita_ppc', 'participacao_pib_mundial', 'populacao', 'inflacao', 'inflacao_dezembro', 'desemprego', 'conta_corrente', 'conta_corrente_usd', 'saldo_fiscal', 'saldo_primario', 'saldo_primario_estrutural', 'receita_governo', 'despesa_governo', 'juros_divida', 'divida_publica', 'divida_liquida', 'juro_real_longo', 'divida_privada', 'divida_familias', 'divida_empresas'];
+      const out = new Map(historico.map((r) => [r.chave, { chave: r.chave, iso3: r.iso3, ano: r.ano }]));
+      const porAno = new Map();
+      historico.forEach((r) => { if (!porAno.has(r.ano)) porAno.set(r.ano, []); porAno.get(r.ano).push(r); });
+      CAMPOS.forEach((k) => {
+        porAno.forEach((linhas) => {
+          const com = linhas.filter((r) => r[k] != null).sort((a, b) => b[k] - a[k]);
+          let pos = 1;
+          com.forEach((r, i) => {
+            if (i && r[k] !== com[i - 1][k]) pos = i + 1;
+            const o = out.get(r.chave);
+            o[`posicao_${k}`] = pos;
+            o[`total_${k}`] = com.length;
+          });
+        });
+      });
+      return [...out.values()];
+    },
+  });
+
+  dash.calc('continentes', {
+    title: 'Continentes e sub-regiões por ano',
+    description: 'Para cada continente, sub-região e o mundo inteiro, ano a ano: mediana dos países e média ponderada (pelo PIB em PPC; pela população no PIB per capita e no desemprego) nos indicadores em taxa ou % do PIB; soma nos indicadores em nível (PIB em dólares e em PPC, população, conta corrente em dólares, participação no PIB mundial). Inclui quantos países têm dado em cada indicador.',
+    inputs: ['historico', 'paises'],
+    fn: (historico, paises) => {
+      // [field, 'nivel' (summed) or the weight field for rates]
+      const CAMPOS = [['pib_real', 'pib_ppc'], ['pib_usd', 'nivel'], ['pib_per_capita', 'populacao'], ['pib_ppc', 'nivel'], ['pib_per_capita_ppc', 'populacao'], ['participacao_pib_mundial', 'nivel'], ['populacao', 'nivel'], ['inflacao', 'pib_ppc'], ['inflacao_dezembro', 'pib_ppc'], ['desemprego', 'populacao'], ['conta_corrente', 'pib_ppc'], ['conta_corrente_usd', 'nivel'], ['saldo_fiscal', 'pib_ppc'], ['saldo_primario', 'pib_ppc'], ['saldo_primario_estrutural', 'pib_ppc'], ['receita_governo', 'pib_ppc'], ['despesa_governo', 'pib_ppc'], ['juros_divida', 'pib_ppc'], ['divida_publica', 'pib_ppc'], ['divida_liquida', 'pib_ppc'], ['juro_real_longo', 'pib_ppc'], ['divida_privada', 'pib_ppc'], ['divida_familias', 'pib_ppc'], ['divida_empresas', 'pib_ppc']];
+      const r2 = (v) => (v == null || Number.isNaN(v) ? null : Math.round(v * 100) / 100);
+      const mediana = (v) => { if (!v.length) return null; const s = v.slice().sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+      const agrega = (linhas, out) => {
+        CAMPOS.forEach(([k, peso]) => {
+          const com = linhas.filter((r) => r[k] != null);
+          if (peso === 'nivel') out[`${k}_soma`] = com.length ? r2(com.reduce((s, r) => s + r[k], 0)) : null;
+          else {
+            out[`${k}_mediana`] = r2(mediana(com.map((r) => r[k])));
+            const cp = com.filter((r) => r[peso] != null && r[peso] > 0);
+            const sp = cp.reduce((s, r) => s + r[peso], 0);
+            out[`${k}_ponderada`] = sp ? r2(cp.reduce((s, r) => s + r[k] * r[peso], 0) / sp) : null;
+          }
+          out[`${k}_paises`] = com.length;
+        });
+        return out;
+      };
+      const grupo = (lista, f) => { const m = new Map(); lista.forEach((r) => { const g = f(r); if (!m.has(g)) m.set(g, []); m.get(g).push(r); }); return m; };
+      const sub = new Map(paises.map((p) => [p.iso3, p.sub_regiao]));
+      const linhas = [];
+      const porAno = grupo(historico, (r) => r.ano);
+      [...porAno.keys()].sort((a, b) => a - b).forEach((ano) => {
+        const doAno = porAno.get(ano);
+        linhas.push(agrega(doAno, { chave: `mundo|Mundo|${ano}`, tipo: 'mundo', grupo: 'Mundo', continente: 'Mundo', ano, paises: doAno.length }));
+        grupo(doAno, (r) => r.continente).forEach((l, c) => {
+          linhas.push(agrega(l, { chave: `continente|${c}|${ano}`, tipo: 'continente', grupo: c, continente: c, ano, paises: l.length }));
+        });
+        grupo(doAno, (r) => sub.get(r.iso3)).forEach((l, s) => {
+          linhas.push(agrega(l, { chave: `sub_regiao|${s}|${ano}`, tipo: 'sub_regiao', grupo: s, continente: l[0].continente, ano, paises: l.length }));
+        });
+      });
+      return linhas;
+    },
+  });
+
+  dash.calc('medias_decada', {
+    title: 'Médias por período',
+    description: 'Média simples dos anos com dado em cada período (anos 1980, 1990, 2000, 2010, 2020 a 2025 e projeções de 2026 a 2031), por país e indicador; para os continentes, média das medianas anuais dos países.',
+    inputs: ['historico'],
+    fn: (historico) => {
+      const CAMPOS = ['pib_real', 'pib_usd', 'pib_per_capita', 'pib_ppc', 'pib_per_capita_ppc', 'participacao_pib_mundial', 'populacao', 'inflacao', 'inflacao_dezembro', 'desemprego', 'conta_corrente', 'conta_corrente_usd', 'saldo_fiscal', 'saldo_primario', 'saldo_primario_estrutural', 'receita_governo', 'despesa_governo', 'juros_divida', 'divida_publica', 'divida_liquida', 'juro_real_longo', 'divida_privada', 'divida_familias', 'divida_empresas'];
+      const CONT = ['África', 'América do Norte e Central', 'América do Sul', 'Ásia', 'Europa', 'Oceania'];
+      const PERIODOS = [['decada_1980', 1980, 1989], ['decada_1990', 1990, 1999], ['decada_2000', 2000, 2009], ['decada_2010', 2010, 2019], ['anos_2020_2025', 2020, 2025], ['projecao_2026_2031', 2026, 2031]];
+      const r2 = (v) => (v == null || Number.isNaN(v) ? null : Math.round(v * 100) / 100);
+      const mediana = (v) => { if (!v.length) return null; const s = v.slice().sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+      const media = (pts, a, b) => { const v = pts.filter((p) => p[0] >= a && p[0] <= b && p[1] != null).map((p) => p[1]); return v.length ? r2(v.reduce((s, x) => s + x, 0) / v.length) : null; };
+      const out = [];
+      const porPais = new Map();
+      historico.forEach((r) => { if (!porPais.has(r.iso3)) porPais.set(r.iso3, []); porPais.get(r.iso3).push(r); });
+      porPais.forEach((l, iso) => {
+        CAMPOS.forEach((k) => {
+          const pts = l.map((r) => [r.ano, r[k]]);
+          if (!pts.some((p) => p[1] != null)) return;
+          const row = { chave: `${iso}|${k}`, id: iso, nome: l[0].pais, tipo: 'país', indicador: k };
+          PERIODOS.forEach(([c, a, b]) => { row[c] = media(pts, a, b); });
+          out.push(row);
+        });
+      });
+      CONT.forEach((c) => {
+        const porAno = new Map();
+        historico.filter((r) => r.continente === c).forEach((r) => { if (!porAno.has(r.ano)) porAno.set(r.ano, []); porAno.get(r.ano).push(r); });
+        if (!porAno.size) return;
+        CAMPOS.forEach((k) => {
+          const pts = [...porAno.entries()].map(([ano, l]) => [ano, mediana(l.map((r) => r[k]).filter((v) => v != null))]);
+          if (!pts.some((p) => p[1] != null)) return;
+          const row = { chave: `${c}|${k}`, id: c, nome: `${c} (mediana)`, tipo: 'continente', indicador: k };
+          PERIODOS.forEach(([col, a, b]) => { row[col] = media(pts, a, b); });
+          out.push(row);
+        });
+      });
+      return out;
+    },
+  });
+
+  dash.calc('g20_resumo', {
+    title: 'Extremos do G20',
+    description: 'Menor e maior inflação em 12 meses e menor e maior desemprego entre os 19 países do G20, com o país de cada um.',
+    inputs: ['indicadores'],
+    fn: (indicadores) => {
+      const p = indicadores.filter((r) => r.grupo !== 'Agregado');
+      const ext = (c) => { const s = p.filter((r) => r[c] != null).sort((a, b) => a[c] - b[c]); return [s[0], s[s.length - 1]]; };
+      const [iMin, iMax] = ext('inflacao');
+      const [dMin, dMax] = ext('desemprego');
+      return [{
+        inflacao_min: iMin.inflacao, inflacao_min_pais: iMin.pais, inflacao_max: iMax.inflacao, inflacao_max_pais: iMax.pais,
+        desemprego_min: dMin.desemprego, desemprego_min_pais: dMin.pais, desemprego_max: dMax.desemprego, desemprego_max_pais: dMax.pais,
+      }];
+    },
+  });
+
+  dash.calc('g20_comparacao', {
+    title: 'Cada país contra o G20',
+    description: 'Para cada país do G20 e cada indicador: o valor do país, a mediana dos 19 países (sem a zona do euro) e a posição do país.',
+    inputs: ['indicadores', 'fmi'],
+    fn: (indicadores, fmi) => {
+      const paises = indicadores.filter((r) => r.grupo !== 'Agregado');
+      const fmiPorPais = new Map(fmi.map((r) => [r.pais, r.fmi_2026]));
+      const lista = [
+        ['pib_12m', 'PIB, variação em 12 meses'], ['fmi_2026', 'PIB projetado pelo FMI para 2026'], ['prod_ind', 'Produção industrial, 12 meses'],
+        ['inflacao', 'Inflação ao consumidor, 12 meses'], ['nucleo', 'Núcleo da inflação'], ['desemprego', 'Desemprego'], ['juros', 'Juros básicos'],
+        ['titulo_10a', 'Título público de 10 anos'], ['deficit', 'Saldo fiscal, % do PIB'], ['divida', 'Dívida pública, % do PIB'],
+      ];
+      const linhas = [];
+      lista.forEach(([campo, nome]) => {
+        const valores = paises.map((r) => ({ pais: r.pais, v: campo === 'fmi_2026' ? fmiPorPais.get(r.pais) : r[campo] })).filter((d) => d.v != null);
+        const ord = valores.map((d) => d.v).sort((a, b) => a - b);
+        const meio = Math.floor(ord.length / 2);
+        const mediana = Math.round((ord.length % 2 ? ord[meio] : (ord[meio - 1] + ord[meio]) / 2) * 100) / 100;
+        paises.forEach((r) => {
+          const d = valores.find((x) => x.pais === r.pais);
+          let posicao_txt = '—';
+          if (d) {
+            const deCima = valores.filter((x) => x.v > d.v).length + 1;
+            const deBaixo = valores.filter((x) => x.v < d.v).length + 1;
+            posicao_txt = deCima <= deBaixo ? `${deCima}º maior de ${valores.length}` : `${deBaixo}º menor de ${valores.length}`;
+          }
+          linhas.push({ chave: `${r.pais}|${campo}`, pais: r.pais, indicador: campo, nome, valor: d ? d.v : null, mediana, posicao_txt });
+        });
+      });
+      return linhas;
+    },
+  });
+
+  dash.calc('juro_real', {
+    title: 'Juro real',
+    description: 'Juros básicos menos a inflação ao consumidor em 12 meses, por país do G20.',
+    inputs: ['indicadores'],
+    fn: (indicadores) => indicadores
+      .map((r) => ({ pais: r.pais, juros: r.juros, inflacao: r.inflacao, juro_real: Math.round((r.juros - r.inflacao) * 100) / 100 }))
+      .sort((a, b) => b.juro_real - a.juro_real),
+  });
+})();
+</script>
+
+<script>
+// ---- Tabs and global filters
+(() => {
+  const G = window.g20;
+  const { CONTINENTES, P, anoSel, contSel, subSel, grupoSel, selIso, selecionar, passa } = G;
+  const tabs = [...document.querySelectorAll('.g20 .tab')];
+  let aba = 'mundo';
+  const campos = [...document.querySelectorAll('#filtros [data-abas]')];
+  const show = (id, link) => {
+    aba = id;
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === id)));
+    document.querySelectorAll('.g20 .pagina').forEach((p) => { p.hidden = p.id !== id; });
+    campos.forEach((c) => { c.hidden = !c.dataset.abas.split(' ').includes(id); });
+    if (link) dash.setLink(id);
+    G.redraw();
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.tab, true)));
+  G.abaAtual = () => aba;
+
+  const fCont = document.getElementById('f-cont');
+  fCont.append(new Option('Todos os continentes', 'todos'), ...CONTINENTES.map((c) => new Option(c, c)));
+  fCont.addEventListener('change', () => dash.setParams({ continente: fCont.value, sub_regiao: 'todas' }));
+  const fSub = document.getElementById('f-sub');
+  fSub.addEventListener('change', () => dash.setParams({ sub_regiao: fSub.value }));
+  document.querySelectorAll('#f-grupo button').forEach((b) => b.addEventListener('click', () => dash.setParams({ grupo: b.dataset.grupo })));
+  const fPais = document.getElementById('f-pais');
+  fPais.addEventListener('change', () => selecionar(fPais.value || null));
+  const fInd = document.getElementById('f-ind');
+  G.preencheSelectInd(fInd, G.INDS);
+  fInd.addEventListener('change', () => dash.setParams({ indicador: fInd.value }));
+  const fAno = document.getElementById('f-ano');
+  fAno.addEventListener('input', () => { document.getElementById('ano-rot').textContent = fAno.value; });
+  fAno.addEventListener('change', () => dash.setParams({ ano: Number(fAno.value) }));
+  document.getElementById('f-limpar').addEventListener('click', () => dash.setParams({ continente: 'todos', sub_regiao: 'todas', grupo: 'todos', pais: '' }));
+
+  // Year animation
+  const fPlay = document.getElementById('f-play');
+  let timer = null;
+  const parar = () => { clearInterval(timer); timer = null; fPlay.textContent = '▶ Animar'; };
+  fPlay.addEventListener('click', () => {
+    if (timer) { parar(); return; }
+    const [a0, a1] = G.anosDados();
+    if (anoSel() >= a1) dash.setParams({ ano: a0 });
+    fPlay.textContent = '❚❚ Pausar';
+    timer = setInterval(() => {
+      const prox = anoSel() + 1;
+      if (prox > a1) { parar(); return; }
+      dash.setParams({ ano: prox });
+    }, 900);
+  });
+  tabs.forEach((t) => t.addEventListener('click', parar));
+
+  const desenha = () => {
+    fCont.value = contSel();
+    const pst = dash.data('paises');
+    const subs = pst.status === 'ok'
+      ? [...new Set(pst.data.filter((p) => contSel() === 'todos' || p.continente === contSel()).map((p) => `${p.continente}|${p.sub_regiao}`))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+      : [];
+    fSub.replaceChildren(new Option('Todas', 'todas'));
+    if (contSel() === 'todos') {
+      CONTINENTES.forEach((c) => {
+        const og = document.createElement('optgroup');
+        og.label = c;
+        subs.filter((s) => s.startsWith(`${c}|`)).forEach((s) => og.appendChild(new Option(s.split('|')[1], s.split('|')[1])));
+        fSub.appendChild(og);
+      });
+    } else subs.forEach((s) => fSub.appendChild(new Option(s.split('|')[1], s.split('|')[1])));
+    fSub.value = subSel();
+    if (fSub.value !== subSel()) fSub.value = 'todas';
+    document.querySelectorAll('#f-grupo button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.grupo === grupoSel())));
+    const sel = selIso();
+    const lista = pst.status === 'ok' ? pst.data.filter((p) => passa(p) || p.iso3 === sel) : [];
+    fPais.replaceChildren(new Option('Nenhum país', ''), ...lista.map((p) => new Option(p.pais, p.iso3)));
+    fPais.value = sel || '';
+    fInd.value = G.indSel().k;
+    const [a0, a1] = G.anosDados();
+    fAno.min = a0;
+    fAno.max = a1;
+    fAno.value = anoSel();
+    document.getElementById('ano-rot').textContent = String(anoSel());
+    document.getElementById('ano-proj').hidden = anoSel() < G.ANO_PROJ;
+    const corrida = G.abaAtual() === 'mundo' && P().visao === 'barras';
+    if (corrida && timer) parar();
+    fPlay.hidden = corrida;
+  };
+  G.draws.unshift(desenha);
+  const alvo = location.hash.slice(1);
+  if (tabs.some((t) => t.dataset.tab === alvo)) show(alvo, false);
+  else show('mundo', false);
+})();
+</script>
+
+<script>
+// ---- Mundo: map, country card, extremes, table
+(() => {
+  const G = window.g20;
+  const { fmt, fmtU, fillMark, failBox, isShown, draws, INDS, P, anoSel, indSel, contSel, subSel, grupoSel, selIso, selecionar, passa } = G;
+  const corDe = (token, host) => {
+    const p = document.createElement('span');
+    p.style.color = token;
+    host.appendChild(p);
+    const c = getComputedStyle(p).color;
+    p.remove();
+    return c;
+  };
+  const paleta = (ind, host) => {
+    const neutro = corDe('var(--color-panel)', host);
+    const pos = corDe(dash.colors[0], host);
+    const neg = corDe('var(--color-bad)', host);
+    const n = ind.cortes.length + 1;
+    if (!ind.div) return d3.range(n).map((i) => d3.interpolateRgb(neutro, pos)(0.18 + 0.82 * (i / (n - 1))));
+    const nNeg = ind.cortes.filter((c) => c <= 0).length;
+    const nPos = n - nNeg;
+    return d3.range(n).map((i) => (i < nNeg
+      ? d3.interpolateRgb(neutro, neg)(0.3 + 0.7 * ((nNeg - i) / nNeg))
+      : d3.interpolateRgb(neutro, pos)(0.2 + 0.8 * ((i - nNeg + 1) / nPos))));
+  };
+  const ne1 = (lon, lat) => {
+    const l = (lon * Math.PI) / 180, p = (lat * Math.PI) / 180, p2 = p * p, p4 = p2 * p2;
+    return [
+      l * (0.8707 - 0.131979 * p2 + p4 * (-0.013791 + p4 * (0.003971 * p2 - 0.001529 * p4))),
+      p * (1.007226 + p2 * (0.015085 + p4 * (-0.044475 + 0.028874 * p2 - 0.005916 * p4))),
+    ];
+  };
+  let geoFonte = null, geo = null;
+  const geometria = (rows) => {
+    if (rows !== geoFonte) {
+      geoFonte = rows;
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      const feats = rows.map((r) => {
+        const g = typeof r.geometry === 'string' ? JSON.parse(r.geometry) : r.geometry;
+        const polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+        const rings = [];
+        let maior = null, maiorArea = -1;
+        polys.forEach((poly) => poly.forEach((ring, i) => {
+          const pr = ring.map(([lon, lat]) => ne1(lon, lat));
+          pr.forEach(([x, y]) => { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; });
+          rings.push(pr);
+          if (i === 0) {
+            let a = 0;
+            for (let j = 0, n = pr.length; j < n; j += 1) { const p = pr[j], q = pr[(j + 1) % n]; a += p[0] * q[1] - q[0] * p[1]; }
+            if (Math.abs(a) > maiorArea) { maiorArea = Math.abs(a); maior = pr; }
+          }
+        }));
+        const b = [d3.min(maior, (p) => p[0]), d3.max(maior, (p) => p[0]), d3.min(maior, (p) => p[1]), d3.max(maior, (p) => p[1])];
+        return { id: r.iso3, nome: r.nome, rings, b };
+      });
+      geo = { feats, x0, x1, y0, y1 };
+    }
+    return geo;
+  };
+
+  let zt = d3.zoomIdentity, zLarg = 0, zAlvo = 'todos|todas';
+  const box = document.getElementById('mapa');
+  const legenda = document.getElementById('legenda');
+
+  const desenhaMapa = () => {
+    const ind = indSel(), ano = anoSel();
+    document.getElementById('mapa-titulo').textContent = `${ind.nome} em ${ano}${ano >= G.ANO_PROJ ? ' (projeção)' : ''}`;
+    document.getElementById('mapa-nota').textContent = `Em ${G.rotUn(ind)}. Clique num país para ver os números dele; arraste para mover e use os botões ou Ctrl + rolagem para dar zoom.`;
+    if (!G.pronto(box, ['historico', 'contornos', 'paises'])) { if (dash.data('historico').status === 'error') legenda.replaceChildren(); return; }
+    const W = box.clientWidth;
+    if (!W) return;
+    const gm = geometria(dash.data('contornos').data);
+    const k = (W - 8) / (gm.x1 - gm.x0);
+    const H = Math.round((gm.y1 - gm.y0) * k + 8);
+    const ox = 4 - gm.x0 * k, oy = 4 + gm.y1 * k;
+    const px = (x) => ox + x * k, py = (y) => oy - y * k;
+    const path = (f) => f.rings.map((ring) => `M${ring.map(([x, y]) => `${px(x).toFixed(1)},${py(y).toFixed(1)}`).join('L')}Z`).join('');
+    const hist = G.indice('historico', 'chave');
+    const pais = G.indice('paises', 'iso3');
+    const valor = (iso) => { const r = hist.get(`${iso}-${ano}`); return r ? r[ind.k] : null; };
+    const cores = paleta(ind, box);
+    const escala = d3.scaleThreshold(ind.cortes, cores);
+    const semDado = corDe('var(--color-border-line)', box);
+    const sel = selIso();
+    const filtrando = contSel() !== 'todos' || subSel() !== 'todas' || grupoSel() !== 'todos';
+    const dentro = (f) => { const p = pais.get(f.id); return p ? passa(p) : !filtrando; };
+
+    let alvo = null;
+    const chaveZoom = `${contSel()}|${subSel()}`;
+    if (W !== zLarg) { zt = d3.zoomIdentity; zLarg = W; zAlvo = 'todos|todas'; }
+    if (chaveZoom !== zAlvo) {
+      zAlvo = chaveZoom;
+      if (chaveZoom === 'todos|todas') alvo = d3.zoomIdentity;
+      else {
+        const fs = gm.feats.filter((f) => { const p = pais.get(f.id); return p && passa(p, false) && f.id !== 'RUS'; });
+        if (fs.length) {
+          const bx0 = d3.min(fs, (f) => px(f.b[0])), bx1 = d3.max(fs, (f) => px(f.b[1]));
+          const by0 = d3.min(fs, (f) => py(f.b[3])), by1 = d3.max(fs, (f) => py(f.b[2]));
+          const s = Math.max(1, Math.min(8, 0.9 / Math.max((bx1 - bx0) / W, (by1 - by0) / H)));
+          alvo = d3.zoomIdentity.translate(W / 2 - s * (bx0 + bx1) / 2, H / 2 - s * (by0 + by1) / 2).scale(s);
+        }
+      }
+    }
+
+    box.replaceChildren();
+    box.style.minHeight = `${H}px`;
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H)
+      .attr('role', 'img').attr('aria-label', `Mapa-múndi: ${ind.nome} em ${ano}`);
+    const g = svg.append('g');
+    const tip = G.novoTip(box);
+    const paths = g.selectAll('path.pais').data(gm.feats, (d) => d.id).join('path')
+      .attr('class', (d) => `pais${d.id === sel ? ' is-sel' : ''}${dentro(d) ? '' : ' is-fora'}`)
+      .attr('d', path)
+      .style('fill', (d) => { const v = valor(d.id); return v == null ? semDado : escala(v); })
+      .on('mousemove', (event, d) => { const p = pais.get(d.id); tip.mostra(event, p ? p.pais : d.nome, [`${ind.curto[0].toUpperCase()}${ind.curto.slice(1)}: ${fmtU(valor(d.id), ind)}`]); })
+      .on('mouseleave', () => { tip.hidden = true; })
+      .on('click', (event, d) => { const p = pais.get(d.id); if (p && passa(p)) selecionar(d.id); });
+    paths.filter((d) => d.id === sel).raise();
+    const zoom = d3.zoom().scaleExtent([1, 10]).translateExtent([[0, 0], [W, H]])
+      .filter((event) => (event.type === 'wheel' ? event.ctrlKey || event.metaKey : !event.button))
+      .on('zoom', (event) => { zt = event.transform; g.attr('transform', zt); });
+    svg.call(zoom).call(zoom.transform, zt);
+    if (alvo) svg.transition().duration(600).call(zoom.transform, alvo);
+    const zbox = document.createElement('div');
+    zbox.className = 'zoom';
+    [['+', 'Aproximar', () => svg.transition().duration(250).call(zoom.scaleBy, 1.6)],
+     ['−', 'Afastar', () => svg.transition().duration(250).call(zoom.scaleBy, 1 / 1.6)],
+     ['⟲', 'Voltar ao mapa inteiro', () => svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity)]]
+      .forEach(([t, a, f]) => { const b = document.createElement('button'); b.textContent = t; b.setAttribute('aria-label', a); b.title = a; b.addEventListener('click', f); zbox.appendChild(b); });
+    box.appendChild(zbox);
+
+    legenda.replaceChildren();
+    cores.forEach((cor, i) => {
+      const s = document.createElement('span');
+      const sw = document.createElement('i');
+      sw.style.background = cor;
+      const t = i === 0 ? `abaixo de ${fmt(ind.cortes[0])}` : i === cores.length - 1 ? `${fmt(ind.cortes[i - 1])} ou mais` : `${fmt(ind.cortes[i - 1])} a ${fmt(ind.cortes[i])}`;
+      s.append(sw, document.createTextNode(t));
+      legenda.appendChild(s);
+    });
+    const s0 = document.createElement('span');
+    const sw0 = document.createElement('i');
+    sw0.style.background = semDado;
+    s0.append(sw0, document.createTextNode('sem dado'));
+    legenda.appendChild(s0);
+  };
+
+  // ---- Country card
+  const marca = (tag, fonte, campo, chave) => {
+    const el = document.createElement(tag);
+    el.className = 'g20-v';
+    el.dataset.source = fonte;
+    el.dataset.field = campo;
+    el.dataset.where = `chave=${chave}`;
+    el.textContent = '—';
+    return el;
+  };
+  const desenhaFicha = () => {
+    const ind = indSel(), ano = anoSel(), iso = selIso();
+    const hist = G.indice('historico', 'chave');
+    const pais = G.indice('paises', 'iso3');
+    const ch = `${iso}-${ano}`;
+    const r = iso && hist ? hist.get(ch) : null;
+    const p = iso && pais ? pais.get(iso) : null;
+    const corpo = document.getElementById('ficha-corpo');
+    const vazia = document.getElementById('ficha-vazia');
+    corpo.replaceChildren();
+    vazia.hidden = Boolean(p);
+    corpo.hidden = !p;
+    if (!p) return;
+    const head = document.createElement('div');
+    head.className = 'ficha-head';
+    const h = document.createElement('h3');
+    h.textContent = p.pais;
+    head.appendChild(h);
+    if (p.g20) { const b = document.createElement('span'); b.className = 'badge'; b.textContent = 'G20'; head.appendChild(b); }
+    const nota = document.createElement('p');
+    nota.className = 'g20-note';
+    nota.textContent = `${p.continente} · ${p.sub_regiao} · dados de ${ano}${ano >= G.ANO_PROJ ? ', projeção do FMI' : ''}.`;
+    corpo.append(head, nota);
+    if (!hist) return;
+    if (!r) { const v = document.createElement('p'); v.className = 'vazio'; v.textContent = 'Sem dados para este país neste ano.'; corpo.appendChild(v); return; }
+    const sc = document.createElement('div');
+    sc.className = 'ficha-scroll';
+    const dl = document.createElement('dl');
+    dl.className = 'ficha';
+    let grupo = null;
+    INDS.filter((d) => r[d.k] != null).forEach((d) => {
+      if (d.grupo !== grupo) { grupo = d.grupo; const gt = document.createElement('dt'); gt.className = 'grupo'; gt.textContent = grupo; dl.appendChild(gt); }
+      const dt = document.createElement('dt');
+      dt.textContent = `${d.nome} (${G.rotUn(d)})`;
+      const dd = document.createElement('dd');
+      const v = marca('span', 'historico', d.k, ch);
+      if (d.k === ind.k) { dt.classList.add('is-on'); v.classList.add('is-on'); }
+      dd.appendChild(v);
+      dl.append(dt, dd);
+      if (d.k === 'desemprego' && r.inflacao != null) {
+        const dt2 = document.createElement('dt');
+        dt2.textContent = 'Inflação + desemprego';
+        const dd2 = document.createElement('dd');
+        dd2.appendChild(marca('span', 'miseria', 'indice_miseria', ch));
+        dl.append(dt2, dd2);
+      }
+    });
+    sc.appendChild(dl);
+    corpo.appendChild(sc);
+    if (r[ind.k] != null) {
+      const pos = document.createElement('p');
+      pos.className = 'posicao';
+      pos.append(
+        document.createTextNode(`Em ${ind.curto}, posição no mundo em ${ano}: `),
+        marca('b', 'posicoes', `posicao_${ind.k}`, ch),
+        document.createTextNode('º de '),
+        marca('b', 'posicoes', `total_${ind.k}`, ch),
+        document.createTextNode(', do maior para o menor valor.'),
+      );
+      corpo.appendChild(pos);
+    }
+    corpo.querySelectorAll('.g20-v').forEach(fillMark);
+  };
+
+  // ---- Extremes
+  const desenhaExtremos = () => {
+    const ind = indSel(), ano = anoSel();
+    document.getElementById('extremos-titulo').textContent = `Extremos em ${ind.curto}, ${ano}`;
+    const maiores = document.getElementById('ext-maiores'), menores = document.getElementById('ext-menores');
+    maiores.replaceChildren(); menores.replaceChildren();
+    const st = dash.data('historico'), pais = G.indice('paises', 'iso3');
+    if (st.status !== 'ok' || !pais) return;
+    const com = st.data.filter((r) => r.ano === ano && r[ind.k] != null && passa(pais.get(r.iso3))).sort((a, b) => b[ind.k] - a[ind.k]);
+    const n = Math.min(5, Math.floor(com.length / 2));
+    const item = (r) => {
+      const li = document.createElement('li');
+      li.append(document.createTextNode(`${r.pais} `));
+      const b = document.createElement('b');
+      b.dataset.source = 'historico';
+      b.dataset.field = ind.k;
+      b.dataset.where = `chave=${r.chave}`;
+      b.textContent = fmt(r[ind.k]);
+      li.appendChild(b);
+      li.addEventListener('click', () => selecionar(r.iso3));
+      return li;
+    };
+    com.slice(0, n).forEach((r) => maiores.appendChild(item(r)));
+    com.slice(com.length - n).reverse().forEach((r) => menores.appendChild(item(r)));
+  };
+
+  // ---- World table
+  const tabela = document.getElementById('tabela-mundo');
+  const busca = document.getElementById('busca-mundo');
+  const BASE = ['pib_real', 'inflacao', 'desemprego', 'indice_miseria', 'saldo_fiscal', 'divida_publica', 'conta_corrente', 'pib_per_capita', 'populacao'];
+  let ordem = { col: 'pib_real', dir: -1 };
+  const rotCol = (k) => {
+    if (k === 'pais') return 'País';
+    if (k === 'continente') return 'Continente';
+    if (k === 'indice_miseria') return 'Inflação + desemprego';
+    const d = G.porK[k];
+    return `${d.curto[0].toUpperCase()}${d.curto.slice(1)} (${G.rotUn(d)})`;
+  };
+  const desenhaTabela = () => {
+    const ind = indSel(), ano = anoSel();
+    document.getElementById('ranking-titulo').textContent = `Todos os países em ${ano}`;
+    const cols = ['pais', 'continente', ...(BASE.includes(ind.k) ? [] : [ind.k]), ...BASE];
+    if (!cols.includes(ordem.col)) ordem = { col: ind.k, dir: -1 };
+    const thead = tabela.tHead, corpo = tabela.tBodies[0];
+    thead.replaceChildren();
+    const trh = thead.insertRow();
+    cols.forEach((c) => {
+      const th = document.createElement('th');
+      th.dataset.field = c;
+      if (c === 'indice_miseria') th.dataset.source = 'miseria';
+      if (c === 'continente') th.className = 'esq';
+      if (c === ind.k) th.classList.add('is-on');
+      const b = document.createElement('button');
+      b.className = 'g20-sort';
+      const ativo = ordem.col === c;
+      b.textContent = rotCol(c) + (ativo ? (ordem.dir > 0 ? ' ↑' : ' ↓') : '');
+      th.setAttribute('aria-sort', ativo ? (ordem.dir > 0 ? 'ascending' : 'descending') : 'none');
+      b.addEventListener('click', () => {
+        ordem = ordem.col === c ? { col: c, dir: -ordem.dir } : { col: c, dir: c === 'pais' || c === 'continente' ? 1 : -1 };
+        desenhaTabela();
+      });
+      th.appendChild(b);
+      trh.appendChild(th);
+    });
+    corpo.replaceChildren();
+    const st = dash.data('historico'), ms = dash.data('miseria'), pais = G.indice('paises', 'iso3');
+    if (st.status !== 'ok' || ms.status !== 'ok' || !pais) {
+      const td = corpo.insertRow().insertCell();
+      td.colSpan = cols.length;
+      td.style.textAlign = 'center';
+      if ([st, ms, dash.data('paises')].some((s) => s.status === 'error')) { td.className = 'g20-fail'; td.textContent = 'Failed to load'; } else { td.className = 'dash-skeleton'; td.textContent = '—'; }
+      return;
+    }
+    const mis = G.indice('miseria', 'chave');
+    const q = busca.value.trim().toLowerCase();
+    const sel = selIso();
+    const linhas = st.data.filter((r) => r.ano === ano && passa(pais.get(r.iso3)) && (!q || r.pais.toLowerCase().includes(q)))
+      .map((r) => ({ ...r, indice_miseria: mis.get(r.chave) ? mis.get(r.chave).indice_miseria : null }));
+    linhas.sort((a, b) => {
+      const va = a[ordem.col], vb = b[ordem.col];
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === 'string') return va.localeCompare(vb, 'pt-BR') * ordem.dir;
+      return (va - vb) * ordem.dir;
+    });
+    linhas.forEach((r) => {
+      const tr = corpo.insertRow();
+      tr.dataset.key = r.chave;
+      if (r.iso3 === sel) tr.className = 'is-sel';
+      cols.forEach((c) => {
+        const td = tr.insertCell();
+        if (c === 'pais' || c === 'continente') { td.textContent = r[c]; if (c === 'continente') td.className = 'esq'; return; }
+        td.textContent = fmt(r[c]);
+        if (r[c] == null) td.classList.add('is-na');
+      });
+    });
+  };
+  busca.addEventListener('input', desenhaTabela);
+  tabela.tBodies[0].addEventListener('click', (event) => {
+    const tr = event.target.closest('tr[data-key]');
+    if (!tr) return;
+    selecionar(tr.dataset.key.split('-')[0]);
+    const card = document.getElementById('card-mapa');
+    if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  document.querySelectorAll('#m-visao button').forEach((b) => b.addEventListener('click', () => dash.setParams({ visao: b.dataset.v })));
+  const tudo = () => {
+    document.querySelectorAll('#topo .g20-v').forEach(fillMark);
+    if (!isShown(box)) return;
+    const barras = P().visao === 'barras';
+    document.querySelectorAll('#m-visao button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === (barras ? 'barras' : 'mapa'))));
+    document.getElementById('card-mapa').hidden = barras;
+    document.querySelector('#mundo .lado').hidden = barras;
+    document.getElementById('card-corrida').hidden = !barras;
+    if (!barras) {
+      desenhaMapa();
+      desenhaFicha();
+      desenhaExtremos();
+    }
+    desenhaTabela();
+  };
+  draws.push(tudo);
+})();
+</script>
+
+<script>
+// ---- Continentes
+(() => {
+  const G = window.g20;
+  const { fmt, isShown, draws, INDS, CONTINENTES, corCont, anoSel, indSel, contSel, subSel } = G;
+  const pagina = document.getElementById('continentes');
+  let agrupar = 'continente', stat = 'mediana';
+  const segAgr = document.getElementById('c-agrupar');
+  segAgr.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { agrupar = b.dataset.v; G.redraw(); }));
+  const segStat = document.getElementById('c-stat');
+  const statsDe = (ind) => (ind.tipo === 'nivel' ? [['soma', 'Soma dos países']] : [['mediana', 'Mediana dos países'], ['ponderada', ind.peso === 'populacao' ? 'Média ponderada pela população' : 'Média ponderada pelo PIB (PPC)']]);
+  // Level indicators are summed; rates use the chosen statistic (the median when the chosen one is a sum)
+  const campo = (ind, s) => `${ind.k}_${ind.tipo === 'nivel' ? 'soma' : s === 'soma' ? 'mediana' : s}`;
+  const nomeStat = (ind) => (ind.tipo === 'nivel' ? 'soma' : stat === 'mediana' ? 'mediana' : 'média ponderada');
+
+  const grupos = () => {
+    const st = dash.data('continentes');
+    if (st.status !== 'ok') return [];
+    if (agrupar === 'continente') return CONTINENTES.filter((c) => contSel() === 'todos' || c === contSel()).map((c) => ({ tipo: 'continente', grupo: c, cor: corCont(c) }));
+    const subs = [...new Set(st.data.filter((r) => r.tipo === 'sub_regiao' && (contSel() === 'todos' || r.continente === contSel())).map((r) => `${r.continente}|${r.grupo}`))]
+      .sort((a, b) => CONTINENTES.indexOf(a.split('|')[0]) - CONTINENTES.indexOf(b.split('|')[0]) || a.localeCompare(b, 'pt-BR'));
+    return subs.map((s) => ({ tipo: 'sub_regiao', grupo: s.split('|')[1], continente: s.split('|')[0], cor: corCont(s.split('|')[0]) }));
+  };
+
+  const desenhaControles = (ind) => {
+    segAgr.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === agrupar)));
+    const opcoes = statsDe(ind);
+    if (!opcoes.some(([v]) => v === stat)) stat = opcoes[0][0];
+    segStat.replaceChildren();
+    opcoes.forEach(([v, rot]) => {
+      const b = document.createElement('button');
+      b.textContent = rot;
+      b.setAttribute('aria-pressed', String(v === stat));
+      b.addEventListener('click', () => { stat = v; G.redraw(); });
+      segStat.appendChild(b);
+    });
+    const notas = {
+      mediana: 'Mediana: o valor do país do meio, sem peso pelo tamanho. Mostra o país típico do grupo.',
+      ponderada: ind.peso === 'populacao' ? 'Média ponderada pela população de cada país, que dá mais peso aos países mais populosos.' : 'Média ponderada pelo PIB em PPC, como o FMI faz nos agregados regionais; dá mais peso às economias grandes.',
+      soma: 'Soma dos países com dado. Em anos antigos, países sem dado (como as ex-repúblicas soviéticas antes de 1992) ficam de fora da soma.',
+    };
+    document.getElementById('c-stat-nota').textContent = `${notas[ind.tipo === 'nivel' ? 'soma' : stat]} Os continentes incluem todos os países, sem o filtro de grupo.`;
+  };
+
+  const barras = document.getElementById('c-barras');
+  const linhasBox = document.getElementById('c-linhas');
+  const desenhaBarras = (ind, ano) => {
+    const rotAgr = agrupar === 'continente' ? 'continente' : 'sub-região';
+    document.getElementById('c-barras-titulo').textContent = `${ind.nome} por ${rotAgr}, ${ano} (${nomeStat(ind)}, ${G.rotUn(ind)})`;
+    if (!G.pronto(barras, ['continentes'])) return;
+    const idx = G.indice('continentes', 'chave');
+    const f = campo(ind, stat);
+    const rows = grupos().map((g) => ({ ...g, v: (idx.get(`${g.tipo}|${g.grupo}|${ano}`) || {})[f], n: (idx.get(`${g.tipo}|${g.grupo}|${ano}`) || {})[`${ind.k}_paises`] }))
+      .filter((r) => r.v != null).sort((a, b) => b.v - a.v);
+    if (!rows.length) { G.vazioBox(barras, 'Sem dados para esse indicador neste ano.'); return; }
+    const mundo = idx.get(`mundo|Mundo|${ano}`);
+    G.bars(barras, rows, {
+      nome: (d) => d.grupo,
+      value: (d) => d.v,
+      cor: (d) => (subSel() !== 'todas' && d.grupo !== subSel() ? 'var(--cds-chart-muted)' : d.cor),
+      ref: ind.tipo !== 'nivel' && mundo && mundo[f] != null ? { value: mundo[f], label: 'Mundo' } : null,
+      tip: (d) => [`${ind.curto[0].toUpperCase()}${ind.curto.slice(1)}: ${G.fmtU(d.v, ind)}`, `${d.n} países com dado`],
+      onClick: (d) => (d.tipo === 'continente' ? dash.setParams({ continente: d.grupo, sub_regiao: 'todas' }) : dash.setParams({ continente: d.continente, sub_regiao: d.grupo })),
+    });
+  };
+  const desenhaLinhas = (ind, ano) => {
+    document.getElementById('c-linhas-titulo').textContent = `${ind.nome}, ${nomeStat(ind)} por ${agrupar === 'continente' ? 'continente' : 'sub-região'}`;
+    if (!G.pronto(linhasBox, ['continentes'])) return;
+    const st = dash.data('continentes');
+    const f = campo(ind, stat);
+    const gs = grupos();
+    const series = gs.map((g) => ({
+      id: g.grupo, nome: g.grupo, cor: g.cor, forte: subSel() === g.grupo,
+      pts: st.data.filter((r) => r.tipo === g.tipo && r.grupo === g.grupo).map((r) => [r.ano, r[f]]).sort((a, b) => a[0] - b[0]),
+    }));
+    if (ind.tipo !== 'nivel' && agrupar === 'continente') {
+      series.push({ id: 'Mundo', nome: 'Mundo', cor: 'var(--color-fg-muted)', tracejada: true, pts: st.data.filter((r) => r.tipo === 'mundo').map((r) => [r.ano, r[f]]) });
+    }
+    G.linhas(linhasBox, series, { escala: ind.log ? 'log' : 'linear', ano, fmtV: (v) => G.fmtU(v, ind), onAno: (a) => dash.setParams({ ano: a }), altura: 320 });
+  };
+
+  const tabela = document.getElementById('tabela-cont');
+  const COLS = ['pib_real', 'inflacao', 'desemprego', 'saldo_fiscal', 'divida_publica', 'conta_corrente', 'pib_per_capita_ppc', 'participacao_pib_mundial', 'populacao'];
+  const desenhaTabela = (ind, ano) => {
+    document.getElementById('c-tabela-titulo').textContent = `Quadro comparativo de ${ano}`;
+    document.getElementById('c-tabela-nota').textContent = `Taxas e % do PIB pela ${stat === 'ponderada' ? 'média ponderada' : 'mediana'} dos países; participação no PIB mundial e população somadas. A coluna destacada é o indicador escolhido.`;
+    const cols = [...(COLS.includes(ind.k) ? [] : [ind.k]), ...COLS];
+    const thead = tabela.tHead, corpo = tabela.tBodies[0];
+    thead.replaceChildren();
+    const trh = thead.insertRow();
+    const th0 = document.createElement('th');
+    th0.dataset.field = 'grupo';
+    th0.textContent = agrupar === 'continente' ? 'Continente' : 'Sub-região';
+    const thn = document.createElement('th');
+    thn.dataset.field = 'paises';
+    thn.textContent = 'Países';
+    trh.append(th0, thn);
+    cols.forEach((k) => {
+      const d = G.porK[k];
+      const th = document.createElement('th');
+      th.dataset.field = campo(d, stat);
+      th.textContent = `${d.curto[0].toUpperCase()}${d.curto.slice(1)} (${G.rotUn(d)})`;
+      if (k === ind.k) th.className = 'is-on';
+      trh.appendChild(th);
+    });
+    corpo.replaceChildren();
+    const st = dash.data('continentes');
+    if (st.status !== 'ok') {
+      const td = corpo.insertRow().insertCell();
+      td.colSpan = cols.length + 2;
+      td.style.textAlign = 'center';
+      if (st.status === 'error') { td.className = 'g20-fail'; td.textContent = 'Failed to load'; } else { td.className = 'dash-skeleton'; td.textContent = '—'; }
+      return;
+    }
+    const idx = G.indice('continentes', 'chave');
+    const linhas = [...grupos().map((g) => idx.get(`${g.tipo}|${g.grupo}|${ano}`)), idx.get(`mundo|Mundo|${ano}`)].filter(Boolean);
+    linhas.forEach((r) => {
+      const tr = corpo.insertRow();
+      tr.dataset.key = r.chave;
+      if (r.grupo === subSel() || (agrupar === 'continente' && r.grupo === contSel())) tr.className = 'is-sel';
+      tr.insertCell().textContent = r.grupo;
+      tr.insertCell().textContent = fmt(r.paises);
+      cols.forEach((k) => {
+        const td = tr.insertCell();
+        const v = r[campo(G.porK[k], stat)];
+        td.textContent = fmt(v);
+        if (v == null) td.classList.add('is-na');
+      });
+    });
+  };
+
+  const tudo = () => {
+    if (!isShown(pagina)) return;
+    const ind = indSel(), ano = anoSel();
+    desenhaControles(ind);
+    desenhaBarras(ind, ano);
+    desenhaLinhas(ind, ano);
+    desenhaTabela(ind, ano);
+  };
+  draws.push(tudo);
+})();
+</script>
+
+<script>
+// ---- Histórico
+(() => {
+  const G = window.g20;
+  const { fmt, isShown, draws, CONTINENTES, corCont, P, anoSel, indSel, contSel, subSel, selIso } = G;
+  const pagina = document.getElementById('historico');
+  const MAX = 8;
+  const lista = () => (P().paises || '').split(',').filter(Boolean);
+  const grava = (l) => dash.setParams({ paises: l.slice(0, MAX).join(',') });
+  const add = document.getElementById('h-add');
+  add.addEventListener('change', () => { if (add.value) grava([...lista().filter((i) => i !== add.value), add.value]); });
+  document.getElementById('h-limpar').addEventListener('click', () => grava([]));
+  let escala = null, escalaK = null;
+  document.querySelectorAll('#h-escala button').forEach((b) => b.addEventListener('click', () => { escala = b.dataset.v; G.redraw(); }));
+  const refs = { mundo: true, mediana: false };
+  document.querySelectorAll('#h-ref button').forEach((b) => b.addEventListener('click', () => { refs[b.dataset.v] = !refs[b.dataset.v]; G.redraw(); }));
+  const box = document.getElementById('h-linhas');
+  const legenda = document.createElement('div');
+  legenda.className = 'legenda';
+  box.after(legenda);
+  const WEO = ['pib_real', 'pib_usd', 'pib_per_capita', 'pib_ppc', 'pib_per_capita_ppc', 'participacao_pib_mundial', 'populacao', 'inflacao', 'inflacao_dezembro', 'desemprego', 'conta_corrente_usd', 'conta_corrente', 'saldo_fiscal', 'divida_publica'];
+
+  const desenhaControles = (ind) => {
+    if (escalaK !== ind.k) { escala = ind.log ? 'log' : 'linear'; escalaK = ind.k; }
+    document.querySelectorAll('#h-escala button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === escala)));
+    document.querySelectorAll('#h-ref button').forEach((b) => b.setAttribute('aria-pressed', String(refs[b.dataset.v])));
+    const chips = document.getElementById('h-chips');
+    chips.querySelectorAll('.chip').forEach((c) => c.remove());
+    const pais = G.indice('paises', 'iso3');
+    const cores = coresPaises();
+    lista().forEach((iso) => {
+      const p = pais && pais.get(iso);
+      if (!p) return;
+      const c = document.createElement('span');
+      c.className = 'chip';
+      const i = document.createElement('i');
+      i.style.background = cores.get(iso);
+      const x = document.createElement('button');
+      x.textContent = '✕';
+      x.setAttribute('aria-label', `Remover ${p.pais}`);
+      x.addEventListener('click', () => grava(lista().filter((j) => j !== iso)));
+      c.append(i, document.createTextNode(p.pais), x);
+      chips.insertBefore(c, add);
+    });
+    const pst = dash.data('paises');
+    const usados = new Set(lista());
+    const opts = pst.status === 'ok' ? pst.data.filter((p) => !usados.has(p.iso3) && G.passa(p, false)) : [];
+    add.replaceChildren(new Option(lista().length >= MAX ? 'Limite de 8 países' : '+ Adicionar país', ''), ...opts.map((p) => new Option(p.pais, p.iso3)));
+    add.disabled = lista().length >= MAX;
+  };
+  const coresPaises = () => new Map(lista().map((iso, i) => [iso, dash.colors[i % dash.colors.length]]));
+
+  const desenhaGrafico = (ind, ano) => {
+    let isos = lista();
+    if (!isos.length && selIso()) isos = [selIso()];
+    const modoPaises = isos.length > 0;
+    const grupoTxt = subSel() !== 'todas' ? subSel() : contSel() !== 'todos' ? contSel() : null;
+    const est = ind.tipo === 'nivel' ? 'soma' : 'mediana';
+    document.getElementById('h-titulo').textContent = `${ind.nome}, ${modoPaises ? 'por país' : grupoTxt ? `${est} das sub-regiões de ${contSel()}` : `${est} por continente`}`;
+    document.getElementById('h-nota').textContent = `Em ${G.rotUn(ind)}. ${modoPaises ? `Adicione até 8 países acima.${ind.tipo === 'nivel' ? ' A mediana do continente só aparece nos indicadores em taxa ou % do PIB.' : ''}` : `Sem países escolhidos, o gráfico mostra a ${est} dos países de cada continente; adicione países acima para compará-los.`} A faixa sombreada são projeções; a linha tracejada vertical marca o ano escolhido. Clique no gráfico para mudar o ano.`;
+    if (!G.pronto(box, ['historico', 'agregados', 'continentes', 'paises'])) { legenda.replaceChildren(); return; }
+    const pp = G.porPais();
+    const pais = G.indice('paises', 'iso3');
+    const cont = dash.data('continentes').data;
+    const series = [];
+    const cores = coresPaises();
+    if (modoPaises) {
+      isos.forEach((iso, i) => {
+        const p = pais.get(iso);
+        if (!p) return;
+        series.push({ id: iso, nome: p.pais, cor: cores.get(iso) || dash.colors[i % dash.colors.length], forte: iso === selIso(), pts: (pp.get(iso) || []).map((r) => [r.ano, r[ind.k]]) });
+      });
+      if (refs.mediana && ind.tipo !== 'nivel') {
+        const cs = [...new Set(isos.map((iso) => pais.get(iso) && pais.get(iso).continente).filter(Boolean))];
+        cs.forEach((c) => series.push({ id: `med-${c}`, nome: `Mediana ${c}`, cor: corCont(c), tracejada: true, pts: cont.filter((r) => r.tipo === 'continente' && r.grupo === c).map((r) => [r.ano, r[`${ind.k}_${ind.tipo === 'nivel' ? 'soma' : 'mediana'}`]]) }));
+      }
+    } else if (contSel() !== 'todos') {
+      const subs = [...new Set(cont.filter((r) => r.tipo === 'sub_regiao' && r.continente === contSel()).map((r) => r.grupo))].sort();
+      subs.forEach((s, i) => series.push({ id: s, nome: s, cor: dash.colors[i % dash.colors.length], forte: s === subSel(), pts: cont.filter((r) => r.tipo === 'sub_regiao' && r.grupo === s).map((r) => [r.ano, r[`${ind.k}_${ind.tipo === 'nivel' ? 'soma' : 'mediana'}`]]) }));
+    } else {
+      CONTINENTES.forEach((c) => series.push({ id: c, nome: c, cor: corCont(c), pts: cont.filter((r) => r.tipo === 'continente' && r.grupo === c).map((r) => [r.ano, r[`${ind.k}_${ind.tipo === 'nivel' ? 'soma' : 'mediana'}`]]) }));
+    }
+    if (refs.mundo && WEO.includes(ind.k) && ind.tipo !== 'nivel') {
+      const ag = dash.data('agregados').data.filter((r) => r.codigo === 'WEOWORLD').map((r) => [r.ano, r[ind.k]]);
+      series.push({ id: 'mundo', nome: 'Mundo (FMI)', cor: 'var(--color-fg-muted)', tracejada: true, pts: ag });
+    }
+    G.linhas(box, series, { escala, ano, fmtV: (v) => G.fmtU(v, ind), onAno: (a) => dash.setParams({ ano: a }), altura: 380, legenda, vazio: 'Sem dados desse indicador para os países escolhidos.' });
+  };
+
+  const tabela = document.getElementById('tabela-decadas');
+  const PER = [['decada_1980', 'Anos 1980'], ['decada_1990', 'Anos 1990'], ['decada_2000', 'Anos 2000'], ['decada_2010', 'Anos 2010'], ['anos_2020_2025', '2020 a 2025'], ['projecao_2026_2031', '2026 a 2031 (projeção)']];
+  const desenhaTabela = (ind) => {
+    const thead = tabela.tHead, corpo = tabela.tBodies[0];
+    thead.replaceChildren();
+    const trh = thead.insertRow();
+    const th0 = document.createElement('th');
+    th0.dataset.field = 'nome';
+    th0.textContent = `${ind.nome} (${G.rotUn(ind)})`;
+    trh.appendChild(th0);
+    PER.forEach(([f, rot]) => { const th = document.createElement('th'); th.dataset.field = f; th.textContent = rot; trh.appendChild(th); });
+    corpo.replaceChildren();
+    const st = dash.data('medias_decada');
+    if (st.status !== 'ok') {
+      const td = corpo.insertRow().insertCell();
+      td.colSpan = PER.length + 1;
+      td.style.textAlign = 'center';
+      if (st.status === 'error') { td.className = 'g20-fail'; td.textContent = 'Failed to load'; } else { td.className = 'dash-skeleton'; td.textContent = '—'; }
+      return;
+    }
+    const idx = G.indice('medias_decada', 'chave');
+    let isos = lista();
+    if (!isos.length && selIso()) isos = [selIso()];
+    const ids = isos.length ? [...isos, ...new Set(isos.map((i) => { const p = G.indice('paises', 'iso3'); return p && p.get(i) ? p.get(i).continente : null; }).filter(Boolean))] : CONTINENTES;
+    ids.map((id) => idx.get(`${id}|${ind.k}`)).filter(Boolean).forEach((r) => {
+      const tr = corpo.insertRow();
+      tr.dataset.key = r.chave;
+      if (r.id === selIso()) tr.className = 'is-sel';
+      tr.insertCell().textContent = r.nome;
+      PER.forEach(([f]) => { const td = tr.insertCell(); td.textContent = fmt(r[f]); if (r[f] == null) td.classList.add('is-na'); });
+    });
+  };
+
+  const tudo = () => {
+    if (!isShown(pagina)) return;
+    const ind = indSel(), ano = anoSel();
+    desenhaControles(ind);
+    desenhaGrafico(ind, ano);
+    desenhaTabela(ind);
+  };
+  draws.push(tudo);
+})();
+</script>
+
+<script>
+// ---- Correlações
+(() => {
+  const G = window.g20;
+  const { fmt, isShown, draws, INDS, porK, CONTINENTES, corCont, P, anoSel, selIso, selecionar, passa } = G;
+  const pagina = document.getElementById('correlacoes');
+  const fx = document.getElementById('r-x'), fy = document.getElementById('r-y');
+  G.preencheSelectInd(fx, INDS);
+  G.preencheSelectInd(fy, INDS);
+  const xSel = () => porK[P().x] || porK.inflacao;
+  const ySel = () => porK[P().y] || porK.desemprego;
+  const modo = () => (P().modo_corr === 'tempo' ? 'tempo' : 'paises');
+  fx.addEventListener('change', () => dash.setParams({ x: fx.value }));
+  fy.addEventListener('change', () => dash.setParams({ y: fy.value }));
+  document.getElementById('r-trocar').addEventListener('click', () => dash.setParams({ x: ySel().k, y: xSel().k }));
+  document.querySelectorAll('#r-modo button').forEach((b) => b.addEventListener('click', () => dash.setParams({ modo_corr: b.dataset.v })));
+  const esc = { x: null, y: null, kx: null, ky: null };
+  document.querySelectorAll('#r-ex button').forEach((b) => b.addEventListener('click', () => { esc.x = b.dataset.v; G.redraw(); }));
+  document.querySelectorAll('#r-ey button').forEach((b) => b.addEventListener('click', () => { esc.y = b.dataset.v; G.redraw(); }));
+  let ateAno = 2025;
+  document.querySelectorAll('#r-periodo button').forEach((b) => b.addEventListener('click', () => { ateAno = Number(b.dataset.v); G.redraw(); }));
+  const box = document.getElementById('r-disp');
+  const matrizBox = document.getElementById('r-matriz');
+  const legenda = document.getElementById('r-legenda');
+  const MATRIZ = ['pib_real', 'pib_per_capita_ppc', 'inflacao', 'desemprego', 'conta_corrente', 'saldo_fiscal', 'saldo_primario', 'receita_governo', 'despesa_governo', 'divida_publica', 'juros_divida', 'populacao'];
+
+  // Rows for the current mode: either countries in a year, or years of one country
+  const amostra = () => {
+    const pais = G.indice('paises', 'iso3');
+    if (modo() === 'paises') {
+      const ano = anoSel();
+      return dash.data('historico').data.filter((r) => r.ano === ano && passa(pais.get(r.iso3)));
+    }
+    const iso = selIso();
+    return iso ? (G.porPais().get(iso) || []).filter((r) => r.ano <= ateAno) : [];
+  };
+
+  const desenhaControles = () => {
+    const X = xSel(), Y = ySel();
+    if (esc.kx !== X.k) { esc.x = X.log ? 'log' : 'linear'; esc.kx = X.k; }
+    if (esc.ky !== Y.k) { esc.y = Y.log ? 'log' : 'linear'; esc.ky = Y.k; }
+    fx.value = X.k;
+    fy.value = Y.k;
+    document.querySelectorAll('#r-modo button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === modo())));
+    document.querySelectorAll('#r-ex button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === esc.x)));
+    document.querySelectorAll('#r-ey button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === esc.y)));
+    document.querySelectorAll('#r-periodo button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === ateAno)));
+    document.getElementById('r-periodo-campo').hidden = modo() !== 'tempo';
+  };
+
+  const desenhaDispersao = () => {
+    const X = xSel(), Y = ySel();
+    const ano = anoSel();
+    const pais = G.indice('paises', 'iso3');
+    const nomePais = selIso() && pais && pais.get(selIso()) ? pais.get(selIso()).pais : null;
+    document.getElementById('r-titulo').textContent = modo() === 'paises'
+      ? `${Y.nome} x ${X.nome}, ${ano}${ano >= G.ANO_PROJ ? ' (projeção)' : ''}`
+      : `${Y.nome} x ${X.nome}${nomePais ? `, ${nomePais} ano a ano` : ''}`;
+    document.getElementById('r-nota').textContent = modo() === 'paises'
+      ? 'Cada ponto é um país, colorido pelo continente; segue os filtros de continente, sub-região, grupo e ano. A reta é a regressão linear na escala do gráfico. Spearman mede se os dois sobem e descem juntos pela ordem dos valores e é pouco sensível a extremos; Pearson mede a relação linear na escala exibida. Correlação não é causalidade.'
+      : 'Cada ponto é um ano do país escolhido, ligados em ordem; a cor fica mais intensa nos anos mais recentes, e os pontos vazados são projeções. Escolha o país no filtro País. Correlação não é causalidade.';
+    if (!G.pronto(box, ['historico', 'paises'])) { legenda.replaceChildren(); return; }
+    if (modo() === 'tempo' && !selIso()) { G.vazioBox(box, 'Escolha um país no filtro País para ver a relação ao longo dos anos.'); legenda.replaceChildren(); return; }
+    const pts = amostra().filter((r) => r[X.k] != null && r[Y.k] != null);
+    if (pts.length < 3) { G.vazioBox(box, 'Poucos dados com os dois indicadores nessa seleção. Tente outro ano, outros filtros ou outro par.'); legenda.replaceChildren(); return; }
+    const W = box.clientWidth;
+    if (!W) return;
+    const H = Math.max(300, Math.min(480, Math.round(W * 0.55)));
+    box.replaceChildren();
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H)
+      .attr('role', 'img').attr('aria-label', `${Y.nome} contra ${X.nome}`);
+    const measure = G.medir(svg);
+    const mT = 24, mB = 40, mR = 14;
+    const ey = G.eixo(esc.y, d3.min(pts, (r) => r[Y.k]), d3.max(pts, (r) => r[Y.k]), H - mB, mT, 22, false);
+    const mL = (d3.max(ey.ticks, (t) => measure(fmt(t))) || 0) + 10;
+    const ex = G.eixo(esc.x, d3.min(pts, (r) => r[X.k]), d3.max(pts, (r) => r[X.k]), mL, W - mR, 46, false);
+    const X_ = (v) => ex.f(v), Y_ = (v) => ey.f(v);
+    ey.ticks.forEach((t) => {
+      svg.append('line').attr('x1', mL).attr('x2', W - mR).attr('y1', Y_(t)).attr('y2', Y_(t)).style('stroke', t === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)');
+      svg.append('text').attr('x', mL - 6).attr('y', Y_(t)).attr('dy', '0.35em').attr('text-anchor', 'end').text(fmt(t));
+    });
+    let ultimo = -Infinity;
+    ex.ticks.forEach((t) => {
+      const xx = X_(t), w = measure(fmt(t));
+      svg.append('line').attr('x1', xx).attr('x2', xx).attr('y1', mT).attr('y2', H - mB).style('stroke', t === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)');
+      if (xx - w / 2 > ultimo + 6 && xx + w / 2 <= W) { svg.append('text').attr('x', xx).attr('y', H - mB + 14).attr('text-anchor', 'middle').text(fmt(t)); ultimo = xx + w / 2; }
+    });
+    svg.append('text').attr('x', W - mR).attr('y', H - 6).attr('text-anchor', 'end').text(`${X.nome} (${G.rotUn(X)})`);
+    svg.append('text').attr('x', mL).attr('y', 12).attr('text-anchor', 'start').text(`${Y.nome} (${G.rotUn(Y)})`);
+
+    // Statistics on the plotted scale; projections left out of the time-mode stats unless asked
+    const base = modo() === 'tempo' ? pts.filter((r) => r.ano <= ateAno) : pts;
+    const tx = (v) => (esc.x === 'log' ? G.tf(v) : v), ty = (v) => (esc.y === 'log' ? G.tf(v) : v);
+    const xs = base.map((r) => tx(r[X.k])), ys = base.map((r) => ty(r[Y.k]));
+    const rP = G.pearson(xs, ys), rS = G.spearman(base.map((r) => r[X.k]), base.map((r) => r[Y.k]));
+    if (rP != null) {
+      const mx = d3.mean(xs), my = d3.mean(ys);
+      const b = d3.sum(xs, (x, i) => (x - mx) * (ys[i] - my)) / d3.sum(xs, (x) => (x - mx) ** 2);
+      const a = my - b * mx;
+      const [lx0, lx1] = d3.extent(xs);
+      const inv = (t, tipo) => (tipo === 'log' ? Math.sign(t) * Math.expm1(Math.abs(t)) : t);
+      const ponto = (t) => [X_(inv(t, esc.x)), Y_(inv(a + b * t, esc.y))];
+      const passos = d3.range(0, 41).map((i) => ponto(lx0 + ((lx1 - lx0) * i) / 40));
+      svg.append('path').attr('d', d3.line()(passos)).style('fill', 'none').style('stroke', 'var(--cds-chart-reference)').style('stroke-width', 1.5).style('stroke-dasharray', '6 4');
+    }
+    const forca = (r) => { const a = Math.abs(r); return a < 0.1 ? 'nenhuma' : a < 0.3 ? 'fraca' : a < 0.5 ? 'moderada' : a < 0.7 ? 'forte' : 'muito forte'; };
+    const sinal = (r) => (r == null || Math.abs(r) < 0.1 ? '' : r > 0 ? ' positiva' : ' negativa');
+    const linhasStat = [
+      `n = ${base.length} ${modo() === 'paises' ? 'países' : 'anos'}`,
+      rS != null ? `Spearman ρ = ${fmt(Math.round(rS * 100) / 100 || 0)} (${forca(rS)}${sinal(rS)})` : 'Spearman ρ: —',
+      rP != null ? `Pearson r = ${fmt(Math.round(rP * 100) / 100 || 0)} · R² = ${fmt(Math.round(rP * rP * 100) / 100)}` : 'Pearson r: —',
+    ];
+    // Put the statistics box in the emptiest corner of the plot
+    const larg = d3.max(linhasStat, measure) + 16, alt = linhasStat.length * 16 + 8;
+    const cantos = [[mL + 8, mT + 6], [W - mR - larg - 8, mT + 6], [mL + 8, H - mB - alt - 6], [W - mR - larg - 8, H - mB - alt - 6]];
+    const dentroDe = ([cx, cy]) => pts.filter((r) => { const px = X_(r[X.k]), py = Y_(r[Y.k]); return px >= cx - 6 && px <= cx + larg + 6 && py >= cy - 6 && py <= cy + alt + 6; }).length;
+    const canto = cantos.reduce((m, c) => (dentroDe(c) < dentroDe(m) ? c : m), cantos[0]);
+    const gs = svg.append('g').attr('transform', `translate(${canto[0]},${canto[1]})`);
+    gs.append('rect').attr('width', larg).attr('height', alt).attr('rx', 4).style('fill', 'var(--color-panel)').style('opacity', 0.9).style('stroke', 'var(--color-border-line)');
+    linhasStat.forEach((l, i) => gs.append('text').attr('x', 8).attr('y', 16 + i * 16).attr('class', i === 1 ? 'forte' : null).text(l));
+
+    const tip = G.novoTip(box);
+    const sel = selIso();
+    if (modo() === 'paises') {
+      const ordenados = pts.slice().sort((a, b) => (a.iso3 === sel) - (b.iso3 === sel));
+      svg.append('g').selectAll('circle').data(ordenados).join('circle')
+        .attr('cx', (d) => X_(d[X.k])).attr('cy', (d) => Y_(d[Y.k]))
+        .attr('r', (d) => (d.iso3 === sel ? 7 : 4.5))
+        .style('fill', (d) => corCont(d.continente))
+        .style('fill-opacity', (d) => (!sel || d.iso3 === sel ? 0.85 : 0.45))
+        .style('stroke', (d) => (d.iso3 === sel ? 'var(--color-fg)' : 'none')).style('stroke-width', 2)
+        .on('mousemove', (event, d) => tip.mostra(event, d.pais, [`${X.curto}: ${G.fmtU(d[X.k], X)}`, `${Y.curto}: ${G.fmtU(d[Y.k], Y)}`, d.continente]))
+        .on('mouseleave', () => { tip.hidden = true; })
+        .on('click', (event, d) => selecionar(d.iso3));
+      const ps = pts.find((r) => r.iso3 === sel);
+      if (ps) {
+        const cx = X_(ps[X.k]), cy = Y_(ps[Y.k]);
+        const dir = cx < W - 120;
+        svg.append('text').attr('class', 'is-sel').attr('x', dir ? cx + 10 : cx - 10).attr('y', cy - 8).attr('text-anchor', dir ? 'start' : 'end').text(ps.pais);
+      }
+      legenda.replaceChildren();
+      CONTINENTES.filter((c) => pts.some((r) => r.continente === c)).forEach((c) => {
+        const s = document.createElement('span');
+        const i = document.createElement('i');
+        i.className = 'ponto';
+        i.style.background = corCont(c);
+        s.append(i, document.createTextNode(c));
+        legenda.appendChild(s);
+      });
+    } else {
+      const [a0, a1] = d3.extent(pts, (r) => r.ano);
+      const cClaro = G.corDe('var(--color-border-line)', box), cForte = G.corDe(dash.colors[0], box);
+      const corS = (ano) => d3.interpolateRgb(cClaro, cForte)(0.25 + 0.75 * ((ano - a0) / Math.max(1, a1 - a0)));
+      svg.append('path').attr('d', d3.line()(pts.map((r) => [X_(r[X.k]), Y_(r[Y.k])]))).style('fill', 'none').style('stroke', 'var(--cds-chart-muted)').style('stroke-width', 1);
+      svg.append('g').selectAll('circle').data(pts).join('circle')
+        .attr('cx', (d) => X_(d[X.k])).attr('cy', (d) => Y_(d[Y.k])).attr('r', (d) => (d.ano === anoSel() ? 7 : 4.5))
+        .style('fill', (d) => (d.ano >= G.ANO_PROJ ? 'var(--color-panel)' : corS(d.ano)))
+        .style('stroke', (d) => (d.ano === anoSel() ? 'var(--color-fg)' : corS(d.ano))).style('stroke-width', (d) => (d.ano === anoSel() ? 2 : 1.5))
+        .on('mousemove', (event, d) => tip.mostra(event, `${d.pais}, ${d.ano}${d.ano >= G.ANO_PROJ ? ' (projeção)' : ''}`, [`${X.curto}: ${G.fmtU(d[X.k], X)}`, `${Y.curto}: ${G.fmtU(d[Y.k], Y)}`]))
+        .on('mouseleave', () => { tip.hidden = true; })
+        .on('click', (event, d) => dash.setParams({ ano: d.ano }));
+      const rotular = [pts[0], pts[pts.length - 1], pts.find((r) => r.ano === anoSel())].filter(Boolean);
+      [...new Set(rotular)].forEach((r) => {
+        const cx = X_(r[X.k]), cy = Y_(r[Y.k]);
+        const dir = cx < W - 60;
+        svg.append('text').attr('class', r.ano === anoSel() ? 'is-sel' : 'forte').attr('x', dir ? cx + 8 : cx - 8).attr('y', cy - 7).attr('text-anchor', dir ? 'start' : 'end').text(String(r.ano));
+      });
+      legenda.replaceChildren();
+      const s = document.createElement('span');
+      s.textContent = `${a0} a ${a1}; o ano escolhido aparece maior. Pontos vazados são projeções${ateAno < G.ANO_PROJ ? ', fora do cálculo' : ''}.`;
+      legenda.appendChild(s);
+    }
+  };
+
+  const desenhaMatriz = () => {
+    const nota = document.getElementById('r-matriz-nota');
+    nota.textContent = modo() === 'paises'
+      ? `Correlação de Spearman entre os indicadores, entre os países do ano ${anoSel()} nos filtros escolhidos. Azul é relação positiva, vermelho é negativa; vazio é quando há menos de 8 pares. Clique numa célula para ver o par no gráfico acima.`
+      : 'Correlação de Spearman entre os indicadores, ano a ano, para o país escolhido. Azul é relação positiva, vermelho é negativa; vazio é quando há menos de 8 anos com os dois dados. Clique numa célula para ver o par no gráfico acima.';
+    if (!G.pronto(matrizBox, ['historico', 'paises'])) return;
+    if (modo() === 'tempo' && !selIso()) { G.vazioBox(matrizBox, 'Escolha um país no filtro País.'); return; }
+    const linhas = amostra().filter((r) => modo() === 'paises' || r.ano <= ateAno);
+    const W = matrizBox.clientWidth;
+    if (!W) return;
+    matrizBox.replaceChildren();
+    const n = MATRIZ.length;
+    const svgT = d3.select(matrizBox).append('svg').attr('width', 0).attr('height', 0);
+    const measure = G.medir(svgT);
+    const rot = (k) => { const c = porK[k].curto; return c[0].toUpperCase() + c.slice(1); };
+    const labelW = Math.min(W * 0.38, d3.max(MATRIZ, (k) => measure(rot(k))) + 10);
+    svgT.remove();
+    const cel = Math.max(14, Math.min(48, (W - labelW - 8) / n));
+    const topo = Math.min(140, labelW * 0.75) + 8;
+    const H = topo + cel * n + 8;
+    const svg = d3.select(matrizBox).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H)
+      .attr('role', 'img').attr('aria-label', 'Matriz de correlação entre indicadores');
+    const tip = G.novoTip(matrizBox);
+    const cN = G.corDe('var(--color-panel)', matrizBox), cP = G.corDe(dash.colors[0], matrizBox), cB = G.corDe('var(--color-bad)', matrizBox);
+    const escala = (r) => (r >= 0 ? d3.interpolateRgb(cN, cP)(Math.min(1, r)) : d3.interpolateRgb(cN, cB)(Math.min(1, -r)));
+    MATRIZ.forEach((k, i) => {
+      svg.append('text').attr('x', labelW - 6).attr('y', topo + i * cel + cel / 2).attr('dy', '0.35em').attr('text-anchor', 'end').attr('class', k === xSel().k || k === ySel().k ? 'forte' : null).text(rot(k));
+      const cx = labelW + i * cel + cel / 2;
+      svg.append('text').attr('transform', `translate(${cx},${topo - 6}) rotate(-40)`).attr('text-anchor', 'start').attr('class', k === xSel().k || k === ySel().k ? 'forte' : null).text(rot(k));
+    });
+    MATRIZ.forEach((ky, i) => MATRIZ.forEach((kx, j) => {
+      const par = linhas.filter((r) => r[kx] != null && r[ky] != null);
+      const r = i === j ? 1 : par.length >= 8 ? G.spearman(par.map((q) => q[kx]), par.map((q) => q[ky])) : null;
+      const x = labelW + j * cel, y = topo + i * cel;
+      const g = svg.append('g');
+      g.append('rect').attr('class', 'cel').attr('x', x + 1).attr('y', y + 1).attr('width', cel - 2).attr('height', cel - 2).attr('rx', 3)
+        .style('fill', r == null ? 'transparent' : escala(r))
+        .style('stroke', (kx === xSel().k && ky === ySel().k) ? 'var(--color-fg)' : 'var(--color-border-line)')
+        .style('stroke-width', (kx === xSel().k && ky === ySel().k) ? 2 : 0.5)
+        .on('mousemove', (event) => tip.mostra(event, `${rot(ky)} x ${rot(kx)}`, [r == null ? 'poucos dados' : `Spearman ρ = ${fmt(Math.round(r * 100) / 100 || 0)}`, `${par.length} ${modo() === 'paises' ? 'países' : 'anos'} com os dois dados`]))
+        .on('mouseleave', () => { tip.hidden = true; })
+        .on('click', () => { if (i !== j) dash.setParams({ x: kx, y: ky }); });
+      if (r != null && cel >= 30 && i !== j) {
+        g.append('text').attr('x', x + cel / 2).attr('y', y + cel / 2).attr('dy', '0.35em').attr('text-anchor', 'middle').style('pointer-events', 'none')
+          .attr('class', Math.abs(r) > 0.5 ? 'forte' : null).text(fmt(Math.round(r * 10) / 10 || 0));
+      }
+    }));
+  };
+
+  const tudo = () => {
+    if (!isShown(pagina)) return;
+    desenhaControles();
+    desenhaDispersao();
+    desenhaMatriz();
+  };
+  draws.push(tudo);
+})();
+</script>
+
+<script>
+// ---- G20 tab
+(() => {
+  const G = window.g20;
+  const { fmt, fillMark, failBox, bars, isShown, draws, contSel, selIso, selecionar } = G;
+  const ISO_G20 = { 'Argentina': 'ARG', 'Austrália': 'AUS', 'Brasil': 'BRA', 'Canadá': 'CAN', 'China': 'CHN', 'França': 'FRA', 'Alemanha': 'DEU', 'Índia': 'IND', 'Indonésia': 'IDN', 'Itália': 'ITA', 'Japão': 'JPN', 'México': 'MEX', 'Rússia': 'RUS', 'Arábia Saudita': 'SAU', 'África do Sul': 'ZAF', 'Coreia do Sul': 'KOR', 'Turquia': 'TUR', 'Reino Unido': 'GBR', 'Estados Unidos': 'USA' };
+  const NOME_G20 = Object.fromEntries(Object.entries(ISO_G20).map(([n, i]) => [i, n]));
+  const nomeSel = () => NOME_G20[selIso()] || null;
+  const contDe = (nome) => {
+    if (nome === 'Zona do euro') return 'Europa';
+    const p = G.indice('paises', 'iso3');
+    return p && p.get(ISO_G20[nome]) ? p.get(ISO_G20[nome]).continente : null;
+  };
+  const noFiltro = (nome) => nome === 'Mundo' || contSel() === 'todos' || contDe(nome) === contSel();
+  const ordemRating = ['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+', 'BBB', 'BBB-', 'BB+', 'BB', 'BB-', 'B+', 'B', 'B-', 'CCC+', 'CCC', 'NR'];
+  const colunas = [
+    { campo: 'pib_12m', ref: 'pib_ref' }, { campo: 'fmi_2026', ref: null }, { campo: 'prod_ind', ref: 'prod_ind_ref' },
+    { campo: 'inflacao', ref: 'inflacao_ref' }, { campo: 'nucleo', ref: 'nucleo_ref' }, { campo: 'desemprego', ref: 'desemprego_ref' },
+    { campo: 'juros', ref: 'juros_ref' }, { campo: 'titulo_10a', ref: 'titulo_ref' }, { campo: 'deficit', ref: 'fiscal_ref' },
+    { campo: 'divida', ref: 'fiscal_ref' }, { campo: 'rating_sp', ref: null },
+  ];
+  let ordem = { col: 'pib_12m', dir: -1 };
+  const busca = document.getElementById('busca-g20');
+  const tabela = document.getElementById('tabela-g20');
+  const corpo = tabela.querySelector('tbody');
+  const tabCmp = document.querySelector('#tabela-comparar tbody');
+  const notas = document.getElementById('notas');
+  const pagina = document.getElementById('g20');
+  const chave = (r, col) => {
+    if (col === 'pais') return r.pais;
+    if (col === 'rating_sp') { const i = ordemRating.indexOf(r.rating_sp); return i < 0 ? null : -i; }
+    return r[col];
+  };
+  const desenhaTabela = () => {
+    const ind = dash.data('indicadores'), fmi = dash.data('fmi');
+    corpo.replaceChildren();
+    if (ind.status !== 'ok' || fmi.status !== 'ok') {
+      const td = corpo.insertRow().insertCell();
+      td.colSpan = 12;
+      td.style.textAlign = 'center';
+      if (ind.status === 'error' || fmi.status === 'error') { td.className = 'g20-fail'; td.textContent = 'Failed to load'; } else { td.className = 'dash-skeleton'; td.textContent = '—'; }
+      return;
+    }
+    const fmiPorPais = new Map(fmi.data.map((r) => [r.pais, r.fmi_2026]));
+    const q = busca.value.trim().toLowerCase();
+    const linhas = ind.data.map((r) => ({ ...r, fmi_2026: fmiPorPais.get(r.pais) ?? null }))
+      .filter((r) => noFiltro(r.pais) && (!q || r.pais.toLowerCase().includes(q)));
+    linhas.sort((a, b) => {
+      const va = chave(a, ordem.col), vb = chave(b, ordem.col);
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === 'string') return va.localeCompare(vb, 'pt-BR') * ordem.dir;
+      return (va - vb) * ordem.dir;
+    });
+    const sel = nomeSel();
+    linhas.forEach((r) => {
+      const tr = corpo.insertRow();
+      tr.dataset.key = r.pais;
+      if (r.pais === sel) tr.className = 'is-sel';
+      tr.insertCell().textContent = r.pais;
+      colunas.forEach((c) => {
+        const td = tr.insertCell();
+        const v = r[c.campo];
+        td.textContent = typeof v === 'number' ? fmt(v) : (v ?? '—');
+        if (v == null) td.classList.add('is-na');
+        if (c.campo === 'fmi_2026') td.title = 'Projeção do FMI, outubro de 2026';
+        else if (c.campo === 'rating_sp') td.title = r.rating_perspectiva ? `Perspectiva ${r.rating_perspectiva}` : 'Nota de longo prazo em moeda estrangeira';
+        else if (c.ref && r[c.ref]) td.title = `Referência: ${r[c.ref]}`;
+      });
+    });
+    tabela.querySelectorAll('th').forEach((th) => {
+      const b = th.querySelector('.g20-sort');
+      const ativo = b && b.dataset.col === ordem.col;
+      th.setAttribute('aria-sort', ativo ? (ordem.dir > 0 ? 'ascending' : 'descending') : 'none');
+      if (b) b.textContent = b.textContent.replace(/ [↑↓]$/, '') + (ativo ? (ordem.dir > 0 ? ' ↑' : ' ↓') : '');
+    });
+  };
+  tabela.querySelectorAll('.g20-sort').forEach((b) => b.addEventListener('click', () => {
+    const col = b.dataset.col;
+    ordem = ordem.col === col ? { col, dir: -ordem.dir } : { col, dir: col === 'pais' ? 1 : -1 };
+    desenhaTabela();
+  }));
+  busca.addEventListener('input', desenhaTabela);
+  corpo.addEventListener('click', (event) => {
+    const tr = event.target.closest('tr[data-key]');
+    if (tr && ISO_G20[tr.dataset.key]) selecionar(ISO_G20[tr.dataset.key]);
+  });
+
+  const desenhaComparar = () => {
+    const nome = nomeSel();
+    document.getElementById('comparar-vazio').hidden = Boolean(nome);
+    document.getElementById('comparar-corpo').hidden = !nome;
+    tabCmp.replaceChildren();
+    if (!nome) return;
+    document.getElementById('comparar-th').textContent = nome;
+    const st = dash.data('g20_comparacao');
+    if (st.status !== 'ok') {
+      const td = tabCmp.insertRow().insertCell();
+      td.colSpan = 4;
+      td.style.textAlign = 'center';
+      if (st.status === 'error') { td.className = 'g20-fail'; td.textContent = 'Failed to load'; } else { td.className = 'dash-skeleton'; td.textContent = '—'; }
+      return;
+    }
+    st.data.filter((r) => r.pais === nome).forEach((r) => {
+      const tr = tabCmp.insertRow();
+      tr.dataset.key = r.chave;
+      tr.insertCell().textContent = r.nome;
+      tr.insertCell().textContent = fmt(r.valor);
+      tr.insertCell().textContent = fmt(r.mediana);
+      tr.insertCell().textContent = r.posicao_txt;
+    });
+  };
+
+  const desenhaNotas = () => {
+    const ind = dash.data('indicadores');
+    notas.replaceChildren();
+    if (ind.status !== 'ok') return;
+    ind.data.filter((r) => r.obs && noFiltro(r.pais)).forEach((r) => {
+      const li = document.createElement('li');
+      const b = document.createElement('b');
+      b.textContent = `${r.pais}: `;
+      const s = document.createElement('span');
+      s.dataset.source = 'indicadores';
+      s.dataset.field = 'obs';
+      s.dataset.where = `pais=${encodeURIComponent(r.pais)}`;
+      s.textContent = r.obs;
+      li.append(b, s);
+      notas.appendChild(li);
+    });
+  };
+
+  const clique = (d) => { if (ISO_G20[d.pais]) selecionar(ISO_G20[d.pais]); };
+  const desenhaGraficos = () => {
+    const destaque = nomeSel();
+    const fmi = dash.data('fmi');
+    const boxFmi = document.getElementById('grafico-fmi');
+    if (fmi.status === 'ok') {
+      const mundo = fmi.data.find((r) => r.pais === 'Mundo');
+      const rows = fmi.data.filter((r) => r.pais !== 'Mundo' && noFiltro(r.pais)).sort((a, b) => b.fmi_2026 - a.fmi_2026);
+      bars(boxFmi, rows, { destaque, value: (d) => d.fmi_2026, ref: mundo ? { value: mundo.fmi_2026, label: 'Mundo' } : null, tip: (d) => [`2026: ${fmt(d.fmi_2026)}%`, `2027: ${fmt(d.fmi_2027)}%`], onClick: clique });
+    } else if (fmi.status === 'error') failBox(boxFmi);
+    else { boxFmi.replaceChildren(); boxFmi.classList.toggle('dash-skeleton', fmi.status === 'loading'); }
+
+    const jr = dash.data('juro_real');
+    const boxJr = document.getElementById('grafico-juro-real');
+    if (jr.status === 'ok') {
+      bars(boxJr, jr.data.filter((r) => noFiltro(r.pais)), { destaque, value: (d) => d.juro_real, tip: (d) => [`Juro real: ${fmt(d.juro_real)} p.p.`, `Juros básicos: ${fmt(d.juros)}%`, `Inflação: ${fmt(d.inflacao)}%`], onClick: clique });
+    } else if (jr.status === 'error') failBox(boxJr);
+    else { boxJr.replaceChildren(); boxJr.classList.toggle('dash-skeleton', jr.status === 'loading'); }
+
+    const ind = dash.data('indicadores');
+    const boxDv = document.getElementById('grafico-divida');
+    if (ind.status === 'ok') {
+      const rows = ind.data.filter((r) => r.divida != null && noFiltro(r.pais)).sort((a, b) => b.divida - a.divida);
+      bars(boxDv, rows, { destaque, value: (d) => d.divida, tip: (d) => [`Dívida: ${fmt(d.divida)}% do PIB`, `Saldo fiscal: ${fmt(d.deficit)}% do PIB`], onClick: clique });
+    } else if (ind.status === 'error') failBox(boxDv);
+    else { boxDv.replaceChildren(); boxDv.classList.toggle('dash-skeleton', ind.status === 'loading'); }
+  };
+
+  const tudo = () => {
+    if (!isShown(pagina)) return;
+    document.querySelectorAll('#resumo-g20 .g20-v').forEach(fillMark);
+    desenhaComparar();
+    desenhaGraficos();
+    desenhaTabela();
+    desenhaNotas();
+  };
+  draws.push(tudo);
+})();
+</script>
+
+<script>
+// ---- Corrida de barras (bar chart race)
+(() => {
+  const G = window.g20;
+  const { isShown, draws, CONTINENTES, corCont, P, anoSel, indSel, contSel, subSel, grupoSel, selIso, selecionar, passa } = G;
+  const card = document.getElementById('card-corrida');
+  const box = document.getElementById('corrida');
+  const legenda = document.getElementById('corrida-legenda');
+  const btPlay = document.getElementById('cr-play');
+  const btInicio = document.getElementById('cr-inicio');
+  const btTela = document.getElementById('cr-tela');
+  const cfg = { N: 15, ms: 1000, ate: 2031 };
+  const E = { subs: [], t: null, tocando: false, raf: null, ultimo: null, chave: null, series: [], a0: 1980, a1: 2031, bars: new Map(), L: null, anoParam: null, anoMostrado: null };
+  const nfs = [0, 1, 2].map((d) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+  const UN_CURTA = { 'US$': (n) => `US$ ${n}`, 'US$ bi': (n) => `US$ ${n} bi`, 'Int$': (n) => `US$ ${n} PPC`, 'Int$ bi': (n) => `US$ ${n} bi PPC`, 'milhões': (n) => `${n} mi` };
+  const fmtC = (v, ind) => { const a = Math.abs(v); const n = nfs[a >= 100 ? 0 : a >= 10 ? 1 : 2].format(v); return (UN_CURTA[ind.un] || ((x) => `${x}%`))(n); };
+  // Colour by continent, or by sub-region when a single continent is chosen
+  const corDe = (s) => (contSel() === 'todos' ? corCont(s.continente) : dash.colors[Math.max(0, E.subs.indexOf(s.sub)) % dash.colors.length]);
+
+  const segs = [['cr-vel', 'ms'], ['cr-top', 'N'], ['cr-ate', 'ate']];
+  segs.forEach(([id, k]) => document.querySelectorAll(`#${id} button`).forEach((b) => b.addEventListener('click', () => {
+    cfg[k] = Number(b.dataset.v);
+    marcaSegs();
+    if (k !== 'ms') { E.chave = null; desenha(); }
+  })));
+  const marcaSegs = () => segs.forEach(([id, k]) => document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === cfg[k]))));
+  const botao = () => { btPlay.textContent = E.tocando ? '❚❚ Pausar' : '▶ Reproduzir'; };
+
+  // Keep the global year slider in step while playing, without writing params every frame
+  const sincronizaAno = (ano) => {
+    if (ano === E.anoMostrado) return;
+    E.anoMostrado = ano;
+    const sl = document.getElementById('f-ano');
+    if (sl) sl.value = ano;
+    const rot = document.getElementById('ano-rot');
+    if (rot) rot.textContent = String(ano);
+    const pj = document.getElementById('ano-proj');
+    if (pj) pj.hidden = ano < G.ANO_PROJ;
+  };
+
+  const prepara = () => {
+    const ind = indSel();
+    const pp = G.porPais(), pais = G.indice('paises', 'iso3');
+    const series = [];
+    pp.forEach((linhas, iso) => {
+      const p = pais.get(iso);
+      if (!p || !passa(p)) return;
+      const m = new Map();
+      linhas.forEach((r) => { if (r[ind.k] != null) m.set(r.ano, r[ind.k]); });
+      if (m.size) series.push({ iso, nome: p.pais, curto: p.pais, continente: p.continente, sub: p.sub_regiao, m });
+    });
+    const conta = new Map();
+    series.forEach((s) => s.m.forEach((v, a) => conta.set(a, (conta.get(a) || 0) + 1)));
+    const anos = [...conta.entries()].filter(([, c]) => c >= 2).map(([a]) => a).sort((x, y) => x - y);
+    E.series = series;
+    E.subs = [...new Set(series.map((s) => s.sub))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    E.a0 = anos.length ? anos[0] : null;
+    E.a1 = anos.length ? anos[anos.length - 1] : null;
+  };
+  const fim = () => Math.min(cfg.ate, E.a1);
+  const valorEm = (s, t) => {
+    const y0 = Math.floor(t + 1e-9), f = t - y0;
+    const v0 = s.m.get(y0), v1 = s.m.get(y0 + 1);
+    if (f < 1e-6) return v0 ?? null;
+    if (v0 != null && v1 != null) return v0 + (v1 - v0) * f;
+    if (v0 != null) return f < 0.5 ? v0 : null;
+    if (v1 != null) return f >= 0.5 ? v1 : null;
+    return null;
+  };
+
+  const monta = () => {
+    box.replaceChildren();
+    E.bars.clear();
+    const W = box.clientWidth;
+    if (!W) return false;
+    const cheia = document.fullscreenElement === card;
+    const N = Math.max(1, Math.min(cfg.N, E.series.length));
+    const disp = cheia ? window.innerHeight - box.getBoundingClientRect().top - (legenda.offsetHeight || 0) - 70 : 0;
+    const passo = cheia ? Math.max(22, Math.min(60, Math.floor(disp / N))) : (W < 500 ? 24 : 30);
+    const mT = 4, mB = 26;
+    const H = mT + N * passo + mB;
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H)
+      .attr('role', 'img').attr('aria-label', `Corrida de barras: ${indSel().nome}`);
+    const medeNome = (txt) => { const t = svg.append('text').attr('class', 'nome').text(txt); const w = t.node().getComputedTextLength(); t.remove(); return w; };
+    const nomeW = Math.min(W * 0.34, (Math.max(0, ...E.series.map((s) => medeNome(s.nome))) || 60) + 12);
+    // Shorten names that do not fit the label column
+    E.series.forEach((s) => {
+      let n = s.nome;
+      while (n.length > 3 && medeNome(n === s.nome ? n : `${n}…`) > nomeW - 10) n = n.slice(0, -1);
+      s.curto = n === s.nome ? n : `${n.trimEnd()}…`;
+    });
+    const ind = indSel();
+    const maxAbs = Math.max(1, ...E.series.flatMap((s) => [...s.m.values()].map((v) => Math.abs(v))));
+    const valW = Math.min(W * 0.4, medeNome(fmtC(-maxAbs, ind)) + 14);
+    const gEixo = svg.append('g');
+    const anoTxt = svg.append('text').attr('class', 'ano-grande').attr('x', W - 6).attr('y', H - mB - 10).attr('text-anchor', 'end');
+    if (W < 600) anoTxt.style('font-size', 'calc(var(--cds-font-size-title) * 1.6)');
+    const projTxt = svg.append('text').attr('class', 'ano-proj').attr('x', W - 8).attr('y', H - mB - 10 - (cheia ? 96 : W < 600 ? 44 : 72)).attr('text-anchor', 'end').text('projeção do FMI');
+    // Bars entering or leaving slide in and out below the last row, clipped to the plot
+    svg.append('clipPath').attr('id', 'corrida-clip').append('rect').attr('x', 0).attr('y', 0).attr('width', W).attr('height', H - mB);
+    const gBarras = svg.append('g').attr('clip-path', 'url(#corrida-clip)');
+    E.L = { W, H, mT, mB, passo, nomeW, valW, svg, gEixo, gBarras, anoTxt, projTxt, cheia };
+    return true;
+  };
+
+  const quadro = (dt) => {
+    const L = E.L;
+    if (!L) return false;
+    const ind = indSel(), N = Math.max(1, Math.min(cfg.N, E.series.length)), t = E.t, sel = selIso();
+    const vals = E.series.map((s) => ({ s, v: valorEm(s, t) })).filter((d) => d.v != null).sort((a, b) => b.v - a.v);
+    const valor = new Map(vals.map((d) => [d.s.iso, d.v]));
+    const top = vals.slice(0, N);
+    const alvo = new Map(top.map((d, i) => [d.s.iso, i]));
+    const vmax = top.length ? Math.max(...top.map((d) => d.v)) : 1;
+    const vmin = Math.min(0, ...top.map((d) => d.v));
+    const x = d3.scaleLinear([vmin, vmax > vmin ? vmax : vmin + 1], [L.nomeW, L.W - L.valW]);
+    // Axis: light grid lines with labels under the bars
+    L.gEixo.selectAll('*').remove();
+    x.ticks(Math.max(2, Math.floor((L.W - L.nomeW - L.valW) / 120))).forEach((tk) => {
+      L.gEixo.append('line').attr('x1', x(tk)).attr('x2', x(tk)).attr('y1', L.mT).attr('y2', L.H - L.mB).style('stroke', tk === 0 ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)');
+      L.gEixo.append('text').attr('x', x(tk)).attr('y', L.H - 8).attr('text-anchor', 'middle').text(G.fmt(tk));
+    });
+    top.forEach((d) => {
+      if (E.bars.has(d.s.iso)) return;
+      const g = L.gBarras.append('g').style('cursor', 'pointer').on('click', () => selecionar(d.s.iso));
+      const b = {
+        g, y: dt == null ? alvo.get(d.s.iso) : N + 0.6, op: dt == null ? 1 : 0, v: d.v,
+        rect: g.append('rect').attr('rx', 4),
+        nome: g.append('text').attr('class', 'nome').attr('text-anchor', 'end').attr('dy', '0.35em'),
+        val: g.append('text').attr('class', 'valor').attr('dy', '0.35em'),
+        s: d.s,
+      };
+      b.title = g.append('title');
+      E.bars.set(d.s.iso, b);
+    });
+    const a = dt == null ? 1 : 1 - Math.exp(-dt / 150);
+    let mexendo = false;
+    const altura = L.passo * 0.8;
+    E.bars.forEach((b, iso) => {
+      const dentro = alvo.has(iso);
+      const r = dentro ? alvo.get(iso) : N + 0.6;
+      const op = dentro ? 1 : 0;
+      b.y += (r - b.y) * a;
+      b.op += (op - b.op) * a;
+      if (Math.abs(r - b.y) > 0.005 || Math.abs(op - b.op) > 0.01) mexendo = true;
+      else { b.y = r; b.op = op; }
+      if (!dentro && b.op < 0.02) { b.g.remove(); E.bars.delete(iso); return; }
+      if (valor.has(iso)) b.v = valor.get(iso);
+      const yy = L.mT + b.y * L.passo + L.passo / 2;
+      b.g.attr('transform', `translate(0,${yy.toFixed(2)})`).style('opacity', b.op.toFixed(3));
+      const x0 = x(0), x1 = x(b.v);
+      b.rect.attr('x', Math.min(x0, x1)).attr('y', -altura / 2).attr('width', Math.max(1, Math.abs(x1 - x0))).attr('height', altura)
+        .style('fill', corDe(b.s))
+        .style('stroke', iso === sel ? 'var(--color-fg)' : 'none').style('stroke-width', 2);
+      b.nome.attr('x', L.nomeW - 8).attr('class', iso === sel ? 'nome is-sel' : 'nome').text(b.s.curto);
+      b.val.attr('x', b.v < 0 ? x1 - 6 : x1 + 6).attr('text-anchor', b.v < 0 ? 'end' : 'start').text(fmtC(b.v, ind));
+      b.title.text(`${b.s.nome}: ${fmtC(b.v, ind)}`);
+    });
+    const ano = Math.floor(t + 1e-6);
+    L.anoTxt.text(String(ano));
+    L.projTxt.style('visibility', ano >= G.ANO_PROJ ? 'visible' : 'hidden');
+    return mexendo;
+  };
+
+  const loop = (ts) => {
+    E.raf = null;
+    const dt = E.ultimo == null ? 16 : Math.min(100, ts - E.ultimo);
+    E.ultimo = ts;
+    if (E.tocando) {
+      E.t += dt / cfg.ms;
+      if (E.t >= fim()) {
+        E.t = fim();
+        E.tocando = false;
+        botao();
+        quadro(dt);
+        E.anoParam = Math.round(E.t);
+        dash.setParams({ ano: Math.round(E.t) });
+      }
+      sincronizaAno(Math.floor(E.t + 1e-6));
+    }
+    const mexendo = quadro(dt);
+    if (E.tocando || mexendo) E.raf = requestAnimationFrame(loop);
+    else E.ultimo = null;
+  };
+  const anima = () => { if (!E.raf) { E.ultimo = null; E.raf = requestAnimationFrame(loop); } };
+  const pausa = (gravar) => {
+    if (!E.tocando) return;
+    E.tocando = false;
+    botao();
+    if (gravar) { E.anoParam = Math.floor(E.t + 1e-6); dash.setParams({ ano: E.anoParam }); }
+  };
+
+  btPlay.addEventListener('click', () => {
+    if (E.tocando) { pausa(true); return; }
+    if (E.a0 == null) return;
+    if (E.t == null || E.t >= fim() - 1e-6) E.t = E.a0;
+    E.tocando = true;
+    botao();
+    anima();
+  });
+  btInicio.addEventListener('click', () => {
+    if (E.a0 == null) return;
+    E.t = E.a0;
+    sincronizaAno(E.a0);
+    if (!E.tocando) { E.anoParam = E.a0; dash.setParams({ ano: E.a0 }); }
+    anima();
+  });
+  if (document.fullscreenEnabled && card.requestFullscreen) {
+    btTela.hidden = false;
+    btTela.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else card.requestFullscreen().catch(() => { btTela.hidden = true; });
+    });
+    document.addEventListener('fullscreenchange', () => {
+      btTela.textContent = document.fullscreenElement === card ? '✕ Sair da tela cheia' : '⛶ Tela cheia';
+      E.chave = null;
+      setTimeout(desenha, 60);
+    });
+  }
+  let rz = null;
+  window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!card.hidden && isShown(card)) { E.chave = null; desenha(); } }, 150); });
+
+  const desenha = () => {
+    marcaSegs();
+    botao();
+    if (card.hidden || !isShown(card)) { pausa(false); return; }
+    const ind = indSel();
+    const onde = subSel() !== 'todas' ? subSel() : contSel() !== 'todos' ? contSel() : 'mundo';
+    document.getElementById('corrida-titulo').textContent = `${ind.nome} (${G.rotUn(ind)}): os ${cfg.N} maiores${onde === 'mundo' ? ' do mundo' : ` em ${onde}`}${grupoSel() === 'g20' ? ', só G20' : ''}`;
+    if (!G.pronto(box, ['historico', 'paises'])) { E.chave = null; legenda.replaceChildren(); return; }
+    const chave = [ind.k, contSel(), subSel(), grupoSel(), cfg.N, cfg.ate, box.clientWidth].join('|');
+    let novo = false;
+    if (chave !== E.chave) {
+      prepara();
+      if (E.a0 == null) { G.vazioBox(box, 'Sem dados desse indicador nesses filtros.'); E.chave = null; E.L = null; return; }
+      if (!monta()) return;
+      E.chave = chave;
+      novo = true;
+      legenda.replaceChildren();
+      const itens = contSel() === 'todos'
+        ? CONTINENTES.filter((c) => E.series.some((s) => s.continente === c)).map((c) => [c, corCont(c)])
+        : E.subs.map((sb, i) => [sb, dash.colors[i % dash.colors.length]]);
+      itens.forEach(([nome, cor]) => {
+        const sp = document.createElement('span');
+        const i = document.createElement('i');
+        i.className = 'ponto';
+        i.style.background = cor;
+        sp.append(i, document.createTextNode(nome));
+        legenda.appendChild(sp);
+      });
+    }
+    // A year chosen on the slider (or the first draw) moves the race there; while playing, the race keeps its own clock
+    if (!E.tocando || anoSel() !== E.anoParam) {
+      if (E.tocando && anoSel() !== E.anoParam) E.t = anoSel();
+      if (!E.tocando) E.t = Math.max(E.a0, Math.min(fim(), anoSel()));
+    }
+    E.anoParam = anoSel();
+    if (novo) quadro(null);
+    anima();
+  };
+  draws.push(desenha);
+})();
+</script>
+
+<script>
+dash.onData(() => window.g20.redraw());
+</script>
+
+</div>
+<p class="site-nota">Versão pública e independente do dashboard, com os dados baixados em 23/10/2026. Os filtros ficam no endereço da página, então dá para compartilhar uma visão específica copiando o link.</p>
+</body>
+</html>

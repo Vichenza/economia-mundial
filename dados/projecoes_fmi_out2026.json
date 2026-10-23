@@ -1,0 +1,23 @@
+[
+{"pais":"Mundo","fmi_2026":3.1,"fmi_2027":3.4},
+{"pais":"Argentina","fmi_2026":2.1,"fmi_2027":3.5},
+{"pais":"Austrália","fmi_2026":1.9,"fmi_2027":1.6},
+{"pais":"Brasil","fmi_2026":2.2,"fmi_2027":1.9},
+{"pais":"Canadá","fmi_2026":1.1,"fmi_2027":1.7},
+{"pais":"China","fmi_2026":4.5,"fmi_2027":4.0},
+{"pais":"França","fmi_2026":0.4,"fmi_2027":0.7},
+{"pais":"Alemanha","fmi_2026":1.3,"fmi_2027":1.1},
+{"pais":"Índia","fmi_2026":7.0,"fmi_2027":7.0},
+{"pais":"Indonésia","fmi_2026":5.1,"fmi_2027":5.1},
+{"pais":"Itália","fmi_2026":0.8,"fmi_2027":0.6},
+{"pais":"Japão","fmi_2026":0.7,"fmi_2027":0.7},
+{"pais":"México","fmi_2026":1.5,"fmi_2027":1.8},
+{"pais":"Rússia","fmi_2026":0.9,"fmi_2027":0.9},
+{"pais":"Arábia Saudita","fmi_2026":-3.3,"fmi_2027":7.9},
+{"pais":"África do Sul","fmi_2026":1.0,"fmi_2027":1.3},
+{"pais":"Coreia do Sul","fmi_2026":3.3,"fmi_2027":2.8},
+{"pais":"Turquia","fmi_2026":2.7,"fmi_2027":3.6},
+{"pais":"Reino Unido","fmi_2026":1.3,"fmi_2027":1.2},
+{"pais":"Estados Unidos","fmi_2026":2.3,"fmi_2027":2.3},
+{"pais":"Zona do euro","fmi_2026":1.1,"fmi_2027":1.2}
+]
